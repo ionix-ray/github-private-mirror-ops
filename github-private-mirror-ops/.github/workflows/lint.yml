@@ -1,0 +1,57 @@
+name: Lint
+
+on:
+  pull_request:
+    paths:
+      - ".github/synced-repos.yml"
+      - ".github/registry.schema.json"
+      - ".github/scripts/**"
+      - ".github/workflows/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/synced-repos.yml"
+      - ".github/registry.schema.json"
+      - ".github/scripts/**"
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install yq
+        uses: mikefarah/yq@bbdd97482f2d439126582a59689eb1c855944955 # v4.44.3
+
+      - name: shellcheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y shellcheck
+          find .github/scripts -name '*.sh' -print0 | xargs -0 shellcheck -S warning
+
+      - name: bash -n syntax
+        run: find .github/scripts -name '*.sh' -exec bash -n {} \;
+
+      - name: actionlint
+        uses: raven-actions/actionlint@3a24062651993d40fed1019b58ac6fbdfbf276cc # v2.0.0
+
+      - name: registry schema check
+        run: |
+          python3 -m pip install --quiet pyyaml jsonschema
+          python3 - <<'PY'
+          import yaml, json, jsonschema, sys
+          reg = yaml.safe_load(open(".github/synced-repos.yml"))
+          schema = json.load(open(".github/registry.schema.json"))
+          jsonschema.validate(reg, schema)
+          ups = [r["upstream"] for r in reg.get("repos", [])]
+          prs = [r["private"]  for r in reg.get("repos", [])]
+          assert len(ups) == len(set(ups)), f"duplicate upstream: {ups}"
+          assert len(prs) == len(set(prs)), f"duplicate private:  {prs}"
+          print(f"registry OK: {len(reg.get('repos', []))} repo(s)")
+          PY
+
+      - name: registry semantic check (offline)
+        run: bash .github/scripts/validate-registry.sh
