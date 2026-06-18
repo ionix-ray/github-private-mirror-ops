@@ -1,0 +1,114 @@
+name: New Private Fork
+
+on:
+  workflow_dispatch:
+    inputs:
+      public_url:
+        description: "Public GitHub repo URL (https://github.com/OWNER/REPO[.git])"
+        required: true
+        type: string
+      target_owner:
+        description: "Where the private mirror lands"
+        required: true
+        type: choice
+        options:
+          - samirparhi-dev
+          - cyfen-code
+      branch:
+        description: "Branch to mirror. Leave empty for upstream default. 'all' = mirror every branch."
+        required: false
+        type: string
+        default: ""
+      private_name:
+        description: "Private repo name. Leave empty to use upstream repo name."
+        required: false
+        type: string
+        default: ""
+      register_for_sync:
+        description: "Register in synced-repos.yml for daily cron sync"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: new-fork-${{ inputs.target_owner }}-${{ inputs.public_url }}
+  cancel-in-progress: false
+
+jobs:
+  resolve-secret:
+    runs-on: ubuntu-latest
+    outputs:
+      secret_name: ${{ steps.pick.outputs.name }}
+    steps:
+      - id: pick
+        env:
+          OWNER: ${{ inputs.target_owner }}
+        run: |
+          set -euo pipefail
+          case "$OWNER" in
+            samirparhi-dev) name="GH_SYNC_PAT_SAMIRPARHI_DEV" ;;
+            cyfen-code)     name="GH_SYNC_PAT_CYFEN_CODE" ;;
+            *) echo "::error::unknown target_owner '$OWNER'"; exit 1 ;;
+          esac
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+  mirror:
+    needs: resolve-secret
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ secrets[needs.resolve-secret.outputs.secret_name] }}
+      PUBLIC_URL: ${{ inputs.public_url }}
+      TARGET_OWNER: ${{ inputs.target_owner }}
+      BRANCH_INPUT: ${{ inputs.branch }}
+      PRIVATE_NAME_INPUT: ${{ inputs.private_name }}
+      REGISTER_FOR_SYNC: ${{ inputs.register_for_sync }}
+    steps:
+      - name: Checkout ops repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          persist-credentials: false
+
+      - name: Mask token
+        run: |
+          if [ -n "${GH_TOKEN:-}" ]; then echo "::add-mask::$GH_TOKEN"; fi
+          test -n "${GH_TOKEN:-}" || { echo "::error::secret ${{ needs.resolve-secret.outputs.secret_name }} is empty or missing"; exit 1; }
+
+      - name: Install yq
+        uses: mikefarah/yq@bbdd97482f2d439126582a59689eb1c855944955 # v4.44.3
+
+      - name: Validate target owner + scopes
+        run: bash .github/scripts/validate-owner.sh "$TARGET_OWNER"
+
+      - name: Mirror clone + create private + push
+        id: mirror
+        run: bash .github/scripts/mirror-clone-push.sh
+
+      - name: Capture upstream license + metadata
+        if: steps.mirror.outputs.private_full != ''
+        run: bash .github/scripts/capture-license.sh "${{ steps.mirror.outputs.upstream_full }}"
+
+      - name: Register in synced-repos.yml (PR)
+        if: ${{ inputs.register_for_sync && steps.mirror.outputs.private_full != '' }}
+        env:
+          UPSTREAM_FULL: ${{ steps.mirror.outputs.upstream_full }}
+          PRIVATE_FULL:  ${{ steps.mirror.outputs.private_full }}
+          BRANCH:        ${{ steps.mirror.outputs.branch }}
+        run: bash .github/scripts/register-repo.sh
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## New Private Fork — result"
+            echo
+            echo "- Upstream: \`${{ steps.mirror.outputs.upstream_full || inputs.public_url }}\`"
+            echo "- Private:  \`${{ steps.mirror.outputs.private_full || '(not created)' }}\`"
+            echo "- Branch:   \`${{ steps.mirror.outputs.branch || '(none)' }}\`"
+            echo "- Registered for sync: ${{ inputs.register_for_sync }}"
+          } >> "$GITHUB_STEP_SUMMARY"
