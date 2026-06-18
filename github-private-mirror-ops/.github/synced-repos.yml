@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=./registry.schema.json
+# Source of truth for all private mirrors.
+# Hand-edits allowed for: upstream, private, branch, paused, pause_reason.
+# All other fields written by workflows. Do not hand-edit those.
+version: 1
+defaults:
+  schedule: "0 6 * * *"
+  strategy: fast-forward
+repos: []
