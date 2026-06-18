@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mirror Registry Dashboard</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-secondary: #8b949e;
+  --text-muted: #484f58;
+  --accent: #58a6ff;
+  --accent-hover: #79c0ff;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --info: #58a6ff;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+.subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+.timestamp { color: var(--text-muted); font-size: 12px; font-family: var(--font-mono); }
+
+/* Search & Filter */
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  align-items: center;
+}
+.search-box {
+  flex: 1;
+  min-width: 260px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 14px;
+}
+.search-box:focus { outline: none; border-color: var(--accent); }
+.filter-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-btn:hover, .filter-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(88,166,255,0.1);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.stat-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.stat-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 28px; font-weight: 700; margin-top: 6px; letter-spacing: -0.5px; }
+.stat-value.green { color: var(--success); }
+.stat-value.blue { color: var(--accent); }
+.stat-value.orange { color: var(--warning); }
+.stat-value.red { color: var(--danger); }
+
+/* Language Bars */
+.lang-section { margin-bottom: 28px; }
+.lang-section h2 { font-size: 16px; margin-bottom: 12px; color: var(--text-secondary); font-weight: 500; }
+.lang-chart { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+.lang-bar { transition: width 0.4s ease; }
+.lang-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; }
+.lang-item { display: flex; align-items: center; gap: 6px; }
+.lang-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* Repo Cards */
+.repo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+.repo-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.repo-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.repo-card.archived { opacity: 0.7; }
+.repo-card.paused { border-color: var(--warning); }
+.repo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.repo-name { font-size: 15px; font-weight: 600; color: var(--accent); text-decoration: none; }
+.repo-name:hover { text-decoration: underline; }
+.repo-private { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.badge.green { background: rgba(63,185,80,0.15); color: var(--success); }
+.badge.yellow { background: rgba(210,153,34,0.15); color: var(--warning); }
+.badge.red { background: rgba(248,81,73,0.15); color: var(--danger); }
+.badge.blue { background: rgba(88,166,255,0.15); color: var(--accent); }
+.badge.gray { background: rgba(139,148,158,0.15); color: var(--text-secondary); }
+
+.repo-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.45; min-height: 20px; }
+.repo-meta { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+.repo-meta span { display: flex; align-items: center; gap: 4px; }
+.repo-stats { display: flex; gap: 16px; margin-bottom: 12px; }
+.stat { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+.stat svg { width: 14px; height: 14px; }
+.repo-footer { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); }
+.topics { display: flex; flex-wrap: wrap; gap: 6px; }
+.topic-tag {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.health-bar-bg { height: 4px; background: var(--bg-tertiary); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+.health-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+.opportunity { font-size: 11px; color: var(--warning); margin-top: 8px; font-style: italic; }
+
+/* Empty state */
+.empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty h2 { color: var(--text); margin-bottom: 8px; }
+
+/* Footer */
+footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 12px; color: var(--text-muted); }
+
+@media (max-width: 640px) {
+  .repo-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>🔒 Mirror Registry Dashboard</h1>
+      <div class="subtitle">Private overview of all forked and synced repositories</div>
+    </div>
+    <div class="timestamp" id="generated-at">Loading...</div>
+  </header>
+
+  <div class="controls">
+    <input type="text" class="search-box" id="search" placeholder="Search by name, language, topic, or description...">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="active">Active</button>
+    <button class="filter-btn" data-filter="archived">Archived</button>
+    <button class="filter-btn" data-filter="paused">Paused</button>
+    <button class="filter-btn" data-filter="stale">Stale</button>
+    <button class="filter-btn" data-filter="opportunity">Opportunities</button>
+  </div>
+
+  <div class="stats-grid" id="stats"></div>
+
+  <div class="lang-section" id="lang-section" style="display:none">
+    <h2>Language Distribution</h2>
+    <div class="lang-chart" id="lang-chart"></div>
+    <div class="lang-legend" id="lang-legend"></div>
+  </div>
+
+  <div class="repo-grid" id="repo-grid"></div>
+
+  <footer>
+    Auto-generated from repo-status.json &middot; Open this file locally for live updates
+  </footer>
+</div>
+
+<script>
+// -------------- DATA LOADING --------------
+let data = null;
+let repos = [];
+
+async function load() {
+  try {
+    const resp = await fetch('repo-status.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    data = await resp.json();
+  } catch (e) {
+    // fallback: inline minimal data for demo / error state
+    data = { repos: [], summary: { total_repos: 0 } };
+    document.getElementById('repo-grid').innerHTML =
+      '<div class="empty"><h2>Could not load repo-status.json</h2><p>Make sure this HTML file is in the same directory as repo-status.json.</p></div>';
+  }
+  repos = data.repos || [];
+  render();
+}
+
+// -------------- RENDERING --------------
+function render() {
+  renderStats();
+  renderLangs();
+  renderRepos();
+  document.getElementById('generated-at').textContent = data.generated_at
+    ? 'Updated: ' + new Date(data.generated_at).toLocaleString()
+    : '';
+}
+
+function getFilteredRepos() {
+  const q = (document.getElementById('search').value || '').toLowerCase();
+  const f = document.querySelector('.filter-btn.active').dataset.filter;
+  return repos.filter(r => {
+    const comp = r._computed || {};
+    const days = comp.days_since_push;
+    const text = [
+      r.upstream, r.private, r.language, r.description,
+      (r.topics || []).join(' ')
+    ].join(' ').toLowerCase();
+    if (q && !text.includes(q)) return false;
+    if (f === 'active') return !r.paused && !r.upstream_archived;
+    if (f === 'archived') return r.upstream_archived;
+    if (f === 'paused') return r.paused;
+    if (f === 'stale') return days != null && days > 365 && !r.upstream_archived;
+    if (f === 'opportunity') return !!comp.opportunity_flag;
+    return true;
+  });
+}
+
+function renderStats() {
+  const s = data.summary || {};
+  const totalStars = s.total_stars || 0;
+  const totalForks = s.total_forks || 0;
+  const totalIssues = s.total_open_issues || 0;
+  const archived = s.archived_count || 0;
+  const paused = s.paused_count || 0;
+  const healthy = (s.total_repos || 0) - archived - paused;
+
+  const items = [
+    { label: 'Mirrors', value: s.total_repos || 0, cls: 'blue' },
+    { label: 'Total Stars', value: totalStars.toLocaleString(), cls: 'green' },
+    { label: 'Total Forks', value: totalForks.toLocaleString(), cls: 'green' },
+    { label: 'Open Issues', value: totalIssues.toLocaleString(), cls: 'orange' },
+    { label: 'Healthy', value: healthy, cls: 'green' },
+    { label: 'Archived', value: archived, cls: 'red' },
+  ];
+
+  document.getElementById('stats').innerHTML = items.map(it => `
+    <div class="stat-card">
+      <div class="stat-label">${it.label}</div>
+      <div class="stat-value ${it.cls}">${it.value}</div>
+    </div>
+  `).join('');
+}
+
+const langColors = {
+  'JavaScript': '#f1e05a', 'TypeScript': '#3178c6', 'Python': '#3572A5',
+  'Rust': '#dea584', 'Go': '#00ADD8', 'Java': '#b07219', 'C': '#555555',
+  'C++': '#f34b7d', 'Ruby': '#701516', 'PHP': '#4F5D95', 'Swift': '#ffac45',
+  'Kotlin': '#A97BFF', 'Shell': '#89e051', 'HTML': '#e34c26', 'CSS': '#563d7c',
+  'Scala': '#c22d40', 'R': '#198CE7', 'Dart': '#00B4AB', 'Vue': '#41b883',
+  'Elixir': '#6e4a7e', 'Haskell': '#5e5086', 'Clojure': '#db5855',
+  'Zig': '#ec915c', 'Nim': '#ffe953', 'Lua': '#000080'
+};
+function getLangColor(lang) {
+  return langColors[lang] || '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+}
+
+function renderLangs() {
+  const allLangs = {};
+  let total = 0;
+  repos.forEach(r => {
+    const langs = r.languages || {};
+    for (const [k, v] of Object.entries(langs)) {
+      allLangs[k] = (allLangs[k] || 0) + v;
+      total += v;
+    }
+  });
+  if (total === 0) { document.getElementById('lang-section').style.display = 'none'; return; }
+  document.getElementById('lang-section').style.display = '';
+
+  const sorted = Object.entries(allLangs).sort((a,b) => b[1]-a[1]).slice(0,10);
+  const chart = document.getElementById('lang-chart');
+  const legend = document.getElementById('lang-legend');
+  chart.innerHTML = sorted.map(([lang, bytes]) => {
+    const pct = (bytes / total * 100).toFixed(1);
+    return `<div class="lang-bar" style="width:${pct}%;background:${getLangColor(lang)}"></div>`;
+  }).join('');
+  legend.innerHTML = sorted.map(([lang, bytes]) => {
+    const pct = (bytes / total * 100).toFixed(1);
+    return `<div class="lang-item"><div class="lang-dot" style="background:${getLangColor(lang)}"></div>${lang} ${pct}%</div>`;
+  }).join('');
+}
+
+function renderRepos() {
+  const list = getFilteredRepos();
+  const grid = document.getElementById('repo-grid');
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="empty"><h2>No repos match</h2><p>Try changing your search or filter.</p></div>';
+    return;
+  }
+  grid.innerHTML = list.map(r => {
+    const comp = r._computed || {};
+    const days = comp.days_since_push;
+    const health = comp.health_score || 0;
+    let status = 'active', badgeCls = 'green', badgeText = 'Active';
+    if (r.paused) { status = 'paused'; badgeCls = 'yellow'; badgeText = 'Paused'; }
+    else if (r.upstream_archived) { status = 'archived'; badgeCls = 'gray'; badgeText = 'Archived'; }
+    else if (days != null && days > 365) { status = 'stale'; badgeCls = 'yellow'; badgeText = 'Stale'; }
+
+    const hc = health >= 80 ? 'var(--success)' : health >= 50 ? 'var(--warning)' : 'var(--danger)';
+    const stars = (r.stargazers_count || 0).toLocaleString();
+    const forks = (r.forks_count || 0).toLocaleString();
+    const issues = (r.open_issues_count || 0).toLocaleString();
+    const lang = r.language || '-';
+    const pushed = r.upstream_pushed_at ? r.upstream_pushed_at.slice(0,10) : '-';
+    const topics = (r.topics || []).slice(0,6).map(t => `<span class="topic-tag">${t}</span>`).join('');
+    const opp = comp.opportunity_flag ? `<div class="opportunity">💡 ${comp.opportunity_flag}</div>` : '';
+
+    return `
+    <div class="repo-card ${status}">
+      <div class="repo-header">
+        <div>
+          <a class="repo-name" href="https://github.com/${r.upstream}" target="_blank">${r.upstream}</a>
+          <div class="repo-private">→ ${r.private}</div>
+        </div>
+        <span class="badge ${badgeCls}">${badgeText}</span>
+      </div>
+      <div class="repo-desc">${r.description || ''}</div>
+      <div class="repo-meta">
+        <span>🌐 ${lang}</span>
+        <span>🗓 ${pushed}</span>
+        <span>📏 ${((r.upstream_size_kb || 0)/1024).toFixed(1)} MB</span>
+        <span>🔀 ${r.branch || 'main'}</span>
+      </div>
+      <div class="repo-stats">
+        <div class="stat">⭐ ${stars}</div>
+        <div class="stat">🍴 ${forks}</div>
+        <div class="stat">🐛 ${issues}</div>
+      </div>
+      <div class="repo-footer">
+        <div class="topics">${topics}</div>
+        <div>Health: ${health}</div>
+      </div>
+      <div class="health-bar-bg">
+        <div class="health-bar-fill" style="width:${health}%;background:${hc}"></div>
+      </div>
+      ${opp}
+    </div>
+    `;
+  }).join('');
+}
+
+// -------------- EVENTS --------------
+document.getElementById('search').addEventListener('input', renderRepos);
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderRepos();
+  });
+});
+
+load();
+</script>
+</body>
+</html>

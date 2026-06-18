@@ -1,0 +1,119 @@
+name: Sync Status Dashboard
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+    paths:
+      - '.github/synced-repos.yml'
+  workflow_dispatch:
+    inputs:
+      full_refresh:
+        description: 'Force full metadata refresh for all repos'
+        required: false
+        type: boolean
+        default: false
+      cleanup_deleted:
+        description: 'Remove entries for deleted upstream/private repos'
+        required: false
+        type: boolean
+        default: true
+  schedule:
+    - cron: '0 7 * * *'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: sync-status
+  cancel-in-progress: true
+
+env:
+  REG: '.github/synced-repos.yml'
+  SCHEMA: '.github/registry.schema.json'
+  JSON_OUT: 'repo-status.json'
+  MD_OUT: 'REPO_STATUS.md'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
+    env:
+      GH_TOKEN: ${{ secrets.GH_SYNC_PAT_SAMIRPARHI_DEV }}
+    steps:
+      - name: Checkout ops repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          token: ${{ secrets.GH_SYNC_PAT_SAMIRPARHI_DEV }}
+          persist-credentials: true
+
+      - name: Mask token
+        run: |
+          if [ -n "${GH_TOKEN:-}" ]; then echo "::add-mask::$GH_TOKEN"; fi
+          test -n "${GH_TOKEN:-}" || { echo "::error::GH_TOKEN is empty"; exit 1; }
+
+      - name: Install yq + jq
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y jq
+          if ! command -v yq >/dev/null 2>&1; then
+            sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+            sudo chmod +x /usr/local/bin/yq
+          fi
+          yq --version
+          jq --version
+
+      - name: Validate registry schema
+        run: |
+          python3 -m pip install --quiet pyyaml jsonschema
+          python3 - <<PYEOF
+import yaml, json, jsonschema, sys
+reg = yaml.safe_load(open(".github/synced-repos.yml"))
+schema = json.load(open(".github/registry.schema.json"))
+jsonschema.validate(reg, schema)
+print(f"schema OK: {len(reg.get('repos', []))} repo(s)")
+PYEOF
+
+      - name: Cleanup deleted repos
+        if: ${{ github.event.inputs.cleanup_deleted != 'false' }}
+        run: bash .github/scripts/cleanup-deleted.sh
+        env:
+          FULL_REFRESH: '${{ github.event.inputs.full_refresh || 'false' }}'
+
+      - name: Refresh metadata
+        run: bash .github/scripts/refresh-metadata.sh
+        env:
+          FULL_REFRESH: '${{ github.event.inputs.full_refresh || 'false' }}'
+
+      - name: Generate JSON source of truth
+        run: bash .github/scripts/generate-json.sh
+
+      - name: Generate Markdown status
+        run: bash .github/scripts/generate-md.sh
+
+      - name: Commit and push updates
+        run: |
+          set -euo pipefail
+          git config --global user.email "bot@dpost.me"
+          git config --global user.name "git-private-repo-manager"
+          git add "$REG" "$JSON_OUT" "$MD_OUT" 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: auto-sync status dashboard [skip ci]" || true
+          default_branch=$(git symbolic-ref refs/remotes/origin/HEAD --short | sed 's/origin\///')
+          git push origin HEAD:"$default_branch"
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Mirror Status Dashboard Updated"
+            echo
+            count=$(yq -r '.repos | length' "$REG")
+            echo "- Registered repos: $count"
+            echo "- JSON: \`$JSON_OUT\`"
+            echo "- Markdown: \`$MD_OUT\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+

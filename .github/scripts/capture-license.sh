@@ -21,7 +21,8 @@ if [[ ! -f "$REG" ]]; then
   exit 0
 fi
 
-TMPDIR_RUN="$(mktemp -d -t license.XXXXXXXX)"
+TMPDIR_RUN="$(0)"
+chmod 0700 "$TMPDIR_RUN"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 LIC_JSON="$TMPDIR_RUN/lic.json"
 
