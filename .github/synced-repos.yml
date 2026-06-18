@@ -6,4 +6,5 @@ version: 1
 defaults:
   schedule: "0 6 * * *"
   strategy: fast-forward
-repos: []
+repos:
+  - {"upstream": "anorborg/minimal-repo", "private": "ionix-ray/minimal-repo", "branch": "master", "paused": false, "pause_reason": "", "last_synced_sha": "", "last_synced_at": "", "last_synced_status": "", "last_upstream_sha": "", "last_validated_at": "", "upstream_default_branch": "", "upstream_archived": false, "upstream_pushed_at": "", "upstream_size_kb": 0, "license_current_spdx": "MIT", "license_current_name": "MIT License", "license_history": []}
