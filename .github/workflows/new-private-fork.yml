@@ -43,6 +43,9 @@ concurrency:
 jobs:
   resolve-secret:
     runs-on: ubuntu-latest
+    # All jobs run in the GH_SYNC_PAT_SAMIRPARHI_DEV environment.
+    # PATs + GIT_AUTHOR_* live in that environment's Secrets/Variables only.
+    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
     outputs:
       secret_name: ${{ steps.pick.outputs.name }}
     steps:
@@ -63,6 +66,7 @@ jobs:
     needs: resolve-secret
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
     env:
       GH_TOKEN: ${{ secrets[needs.resolve-secret.outputs.secret_name] }}
       PUBLIC_URL: ${{ inputs.public_url }}
