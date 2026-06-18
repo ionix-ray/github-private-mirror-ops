@@ -66,24 +66,18 @@ jobs:
       - name: Validate registry schema
         run: |
           python3 -m pip install --quiet pyyaml jsonschema
-          python3 - <<PYEOF
-import yaml, json, jsonschema, sys
-reg = yaml.safe_load(open(".github/synced-repos.yml"))
-schema = json.load(open(".github/registry.schema.json"))
-jsonschema.validate(reg, schema)
-print(f"schema OK: {len(reg.get('repos', []))} repo(s)")
-PYEOF
+          python3 -c "import yaml, json, jsonschema; reg=yaml.safe_load(open('.github/synced-repos.yml')); schema=json.load(open('.github/registry.schema.json')); jsonschema.validate(reg,schema); print('schema OK: %s repo(s)' % len(reg.get('repos',[])))"
 
       - name: Cleanup deleted repos
         if: ${{ github.event.inputs.cleanup_deleted != 'false' }}
         run: bash .github/scripts/cleanup-deleted.sh
         env:
-          FULL_REFRESH: '${{ github.event.inputs.full_refresh || 'false' }}'
+          FULL_REFRESH: "${{ github.event.inputs.full_refresh || 'false' }}"
 
       - name: Refresh metadata
         run: bash .github/scripts/refresh-metadata.sh
         env:
-          FULL_REFRESH: '${{ github.event.inputs.full_refresh || 'false' }}'
+          FULL_REFRESH: "${{ github.event.inputs.full_refresh || 'false' }}"
 
       - name: Generate JSON source of truth
         run: bash .github/scripts/generate-json.sh
