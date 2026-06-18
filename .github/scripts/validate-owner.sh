@@ -77,24 +77,55 @@ else
   exit 1
 fi
 
-# Confirm required scopes are present on the token.
-# Use -D to dump headers to a file (avoids -I which can be silently dropped by some proxies).
-curl -sS -D "$HDR_FILE" -o /dev/null \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  "https://api.github.com/user"
-scopes=$(awk -F': ' 'tolower($1)=="x-oauth-scopes"{print $2}' "$HDR_FILE" | tr -d '\r')
+# Detect token style — fine-grained PATs / App tokens don't expose classic scopes.
+# Classic PAT prefixes: ghp_ (user), gho_ (oauth). Fine-grained: github_pat_. App: ghs_.
+case "$GH_TOKEN" in
+  ghp_*|gho_*) token_kind="classic" ;;
+  github_pat_*) token_kind="fine-grained" ;;
+  ghs_*)        token_kind="app-installation" ;;
+  ghu_*)        token_kind="user-to-server" ;;
+  *)            token_kind="unknown" ;;
+esac
+echo "PAT kind: $token_kind"
 
-echo "PAT scopes: ${scopes:-<none reported>}"
-missing=()
-for need in repo workflow; do
-  case ",${scopes// /}," in
-    *",$need,"*) ;;
-    *) missing+=("$need") ;;
-  esac
-done
-if (( ${#missing[@]} > 0 )); then
-  echo "::error::PAT missing required scopes: ${missing[*]}"
-  exit 1
+if [[ "$token_kind" == "classic" ]]; then
+  # Confirm required scopes are present on the token.
+  # Use -D to dump headers to a file (avoids -I which can be silently dropped by some proxies).
+  curl -sS -D "$HDR_FILE" -o /dev/null \
+    -H "Authorization: Bearer ${GH_TOKEN}" \
+    "https://api.github.com/user"
+  scopes=$(awk -F': ' 'tolower($1)=="x-oauth-scopes"{print $2}' "$HDR_FILE" | tr -d '\r')
+
+  echo "PAT scopes: ${scopes:-<none reported>}"
+  missing=()
+  for need in repo workflow; do
+    case ",${scopes// /}," in
+      *",$need,"*) ;;
+      *) missing+=("$need") ;;
+    esac
+  done
+  if (( ${#missing[@]} > 0 )); then
+    echo "::error::classic PAT missing required scopes: ${missing[*]}"
+    exit 1
+  fi
+else
+  # Fine-grained PATs / App tokens don't enumerate classic scopes.
+  # Probe required permissions functionally instead.
+  echo "::notice::token kind '$token_kind' — skipping classic scope header check; probing permissions instead"
+
+  # Probe 1: token must be able to read its own user record (already done above).
+  # Probe 2: token must be able to list private repos (requires repo:read or contents:read).
+  probe_http=$(curl -sS -o /dev/null -w '%{http_code}' \
+    -H "Accept: application/vnd.github+json" \
+    -H "Authorization: Bearer ${GH_TOKEN}" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    "https://api.github.com/user/repos?per_page=1&visibility=all")
+  if [[ "$probe_http" != "200" ]]; then
+    echo "::error::token cannot list user repos (HTTP $probe_http) — needs repo:read / contents:read + administration:write equivalent for create"
+    exit 1
+  fi
+  echo "permission probe passed (user/repos -> HTTP 200)"
+  echo "::warning::workflow scope cannot be verified for non-classic tokens at runtime — confirm the fine-grained PAT was issued with 'Actions: read & write' + 'Contents: read & write' + 'Administration: read & write' + 'Workflows: read & write'"
 fi
 
 echo "owner=$OWNER kind=$kind validated"
