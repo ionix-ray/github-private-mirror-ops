@@ -15,8 +15,8 @@ paused=$( yq -r '[.repos[] | select(.paused == true)] | length' "$REG")
 diverged=$(yq -r '[.repos[] | select(.last_synced_status == "diverged")] | length' "$REG")
 failed=$(yq -r '[.repos[] | select(.last_synced_status == "failed")] | length' "$REG")
 archived=$(yq -r '[.repos[] | select(.upstream_archived == true)] | length' "$REG")
-total_stars=$(yq -r '[.repos[] | .stargazers_count // 0] | add' "$REG")
-total_forks=$(yq -r '[.repos[] | .forks_count // 0] | add' "$REG")
+total_stars=$(python3 -c 'import yaml; d=yaml.safe_load(open(".github/synced-repos.yml")); print(sum(r.get("stargazers_count",0) for r in d.get("repos",[])))' || echo 0)
+total_forks=$(python3 -c 'import yaml; d=yaml.safe_load(open(".github/synced-repos.yml")); print(sum(r.get("forks_count",0) for r in d.get("repos",[])))' || echo 0)
 
 {
   echo "# github-private-mirror-ops"

@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-06-18T17:39:07.204644+00:00",
+  "version": 1,
+  "defaults": {
+    "schedule": "0 6 * * *",
+    "strategy": "fast-forward"
+  },
+  "summary": {
+    "total_repos": 0,
+    "total_stars": 0,
+    "total_forks": 0,
+    "total_open_issues": 0,
+    "archived_count": 0,
+    "paused_count": 0,
+    "license_changes": 0
+  },
+  "repos": []
+}
