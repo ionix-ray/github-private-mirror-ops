@@ -48,7 +48,9 @@ if [[ "$dup_up" != "0" || "$dup_pr" != "0" ]]; then
   exit 0
 fi
 
-new=$(yq -n \
+# Build the new entry as JSON with jq (which supports --arg safely);
+# mikefarah/yq's load() auto-detects YAML/JSON, so the file can be loaded directly.
+new=$(jq -nc \
   --arg up "$UPSTREAM_FULL" \
   --arg pr "$PRIVATE_FULL" \
   --arg br "$BRANCH" \
@@ -73,7 +75,7 @@ new=$(yq -n \
   }')
 
 # Append entry via env(NEWPATH) — no shell interpolation in yq expression
-NEWFILE="$TMPDIR_RUN/new.yml"
+NEWFILE="$TMPDIR_RUN/new.json"
 printf '%s\n' "$new" > "$NEWFILE"
 NEWPATH="$NEWFILE" yq -i '.repos += [load(env(NEWPATH))]' "$REG"
 
