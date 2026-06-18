@@ -10,12 +10,22 @@ UPSTREAM="${1:?upstream owner/repo required}"
 REG=".github/synced-repos.yml"
 : "${GH_TOKEN:?}"
 
+# Charset hardening — upstream must be owner/repo with safe chars only.
+if ! [[ "$UPSTREAM" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+  echo "::error::capture-license: UPSTREAM has unsupported characters: $UPSTREAM"
+  exit 1
+fi
+
 if [[ ! -f "$REG" ]]; then
   echo "registry $REG missing — skip"
   exit 0
 fi
 
-http=$(curl -sS -o /tmp/lic.json -w '%{http_code}' \
+TMPDIR_RUN="$(mktemp -d -t license.XXXXXXXX)"
+trap 'rm -rf "$TMPDIR_RUN"' EXIT
+LIC_JSON="$TMPDIR_RUN/lic.json"
+
+http=$(curl -sS -o "$LIC_JSON" -w '%{http_code}' \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GH_TOKEN}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -25,25 +35,35 @@ if [[ "$http" != "200" ]]; then
   exit 0
 fi
 
-spdx=$(jq -r '.license.spdx_id // "NOASSERTION"' /tmp/lic.json)
-name=$(jq -r '.license.name // ""'               /tmp/lic.json)
+spdx=$(jq -r '.license.spdx_id // "NOASSERTION"' "$LIC_JSON")
+name=$(jq -r '.license.name // ""'               "$LIC_JSON")
 
-idx=$(yq -r ".repos | to_entries | map(select(.value.upstream == \"$UPSTREAM\")) | .[0].key // \"\"" "$REG")
+# Lookup index via env() — attacker-controlled UPSTREAM cannot escape yq filter.
+idx=$(UP="$UPSTREAM" yq -r '.repos | to_entries | map(select(.value.upstream == strenv(UP))) | .[0].key // ""' "$REG")
 if [[ -z "$idx" || "$idx" == "null" ]]; then
   echo "$UPSTREAM not registered yet — license will be captured on registration"
   exit 0
 fi
+# Idx must be a non-negative integer (yq returns the entry key).
+if ! [[ "$idx" =~ ^[0-9]+$ ]]; then
+  echo "::error::capture-license: unexpected idx value '$idx'"
+  exit 1
+fi
 
-old_spdx=$(yq -r ".repos[$idx].license_current_spdx // \"\"" "$REG")
+old_spdx=$(IDX="$idx" yq -r '.repos[env(IDX) | tonumber].license_current_spdx // ""' "$REG")
 
 if [[ -n "$old_spdx" && "$old_spdx" != "$spdx" ]]; then
-  # license change — append history
   today=$(date -u +%F)
-  yq -i ".repos[$idx].license_history = ((.repos[$idx].license_history // []) + [{\"date\": \"$today\", \"from_spdx\": \"$old_spdx\", \"to_spdx\": \"$spdx\", \"upstream_sha\": \"\"}])" "$REG"
+  IDX="$idx" SPDX="$spdx" OLD="$old_spdx" DATE="$today" \
+    yq -i '
+      .repos[env(IDX) | tonumber].license_history =
+        ((.repos[env(IDX) | tonumber].license_history // []) +
+         [{"date": strenv(DATE), "from_spdx": strenv(OLD), "to_spdx": strenv(SPDX), "upstream_sha": ""}])
+    ' "$REG"
   echo "::notice::license change detected for $UPSTREAM: $old_spdx -> $spdx"
 fi
 
-yq -i ".repos[$idx].license_current_spdx = \"$spdx\"" "$REG"
-yq -i ".repos[$idx].license_current_name = \"$name\"" "$REG"
+IDX="$idx" SPDX="$spdx" yq -i '.repos[env(IDX) | tonumber].license_current_spdx = strenv(SPDX)' "$REG"
+IDX="$idx" NAME="$name" yq -i '.repos[env(IDX) | tonumber].license_current_name = strenv(NAME)' "$REG"
 
 echo "license captured: $UPSTREAM spdx=$spdx"

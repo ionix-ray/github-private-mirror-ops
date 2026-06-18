@@ -43,17 +43,32 @@ echo "registry valid: $count repo(s)"
 if [[ "$LIVE" != "--live" ]]; then exit 0; fi
 : "${GH_TOKEN:?live mode requires GH_TOKEN}"
 
+# Owner/repo charset sanity check.
+is_full_repo() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; }
+
+TMPDIR_RUN="$(mktemp -d -t valreg.XXXXXXXX)"
+trap 'rm -rf "$TMPDIR_RUN"' EXIT
+U_JSON="$TMPDIR_RUN/u.json"
+P_JSON="$TMPDIR_RUN/p.json"
+
 critical=0
 warn=0
 notable=0
 for i in $(seq 0 $((count - 1))); do
-  up=$(yq -r ".repos[$i].upstream" "$REG")
-  pr=$(yq -r ".repos[$i].private"  "$REG")
-  br=$(yq -r ".repos[$i].branch"   "$REG")
+  up=$(IDX="$i" yq -r '.repos[env(IDX) | tonumber].upstream' "$REG")
+  pr=$(IDX="$i" yq -r '.repos[env(IDX) | tonumber].private'  "$REG")
+
+  if ! is_full_repo "$up" || ! is_full_repo "$pr"; then
+    echo "::error::CRITICAL: registry entry $i has malformed upstream/private"
+    critical=$((critical+1))
+    continue
+  fi
 
   # upstream reachable
-  uh=$(curl -sS -o /tmp/u.json -w '%{http_code}' \
+  uh=$(curl -sS -o "$U_JSON" -w '%{http_code}' \
+    -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${GH_TOKEN}" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
     "https://api.github.com/repos/${up}")
   if [[ "$uh" != "200" ]]; then
     echo "::error::CRITICAL: upstream $up unreachable (HTTP $uh)"
@@ -62,30 +77,32 @@ for i in $(seq 0 $((count - 1))); do
   fi
 
   # private exists + visibility=private
-  ph=$(curl -sS -o /tmp/p.json -w '%{http_code}' \
+  ph=$(curl -sS -o "$P_JSON" -w '%{http_code}' \
+    -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${GH_TOKEN}" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
     "https://api.github.com/repos/${pr}")
   if [[ "$ph" != "200" ]]; then
     echo "::error::CRITICAL: private $pr unreachable (HTTP $ph)"
     critical=$((critical+1))
     continue
   fi
-  vis=$(jq -r '.visibility // (.private | if . then "private" else "public" end)' /tmp/p.json)
+  vis=$(jq -r '.visibility // (.private | if . then "private" else "public" end)' "$P_JSON")
   if [[ "$vis" != "private" ]]; then
     echo "::error::CRITICAL: $pr visibility=$vis — must be private"
     critical=$((critical+1))
   fi
 
   # archived upstream
-  arch=$(jq -r '.archived' /tmp/u.json)
+  arch=$(jq -r '.archived' "$U_JSON")
   if [[ "$arch" == "true" ]]; then
     echo "::warning::WARN: upstream $up is archived — consider pausing"
     warn=$((warn+1))
   fi
 
   # default branch drift
-  udb=$(jq -r '.default_branch' /tmp/u.json)
-  tdb=$(yq -r ".repos[$i].upstream_default_branch // \"\"" "$REG")
+  udb=$(jq -r '.default_branch' "$U_JSON")
+  tdb=$(IDX="$i" yq -r '.repos[env(IDX) | tonumber].upstream_default_branch // ""' "$REG")
   if [[ -n "$tdb" && "$udb" != "$tdb" ]]; then
     echo "::warning::WARN: $up default_branch changed $tdb -> $udb"
     warn=$((warn+1))

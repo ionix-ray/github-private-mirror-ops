@@ -12,6 +12,29 @@ set -euo pipefail
 : "${TARGET_OWNER:?}"
 : "${GH_TOKEN:?}"
 
+# --- Hardening helpers ---
+# Per-run tempdir; auto-cleanup on exit. Avoids /tmp TOCTOU.
+TMPDIR_RUN="$(mktemp -d -t mirror.XXXXXXXX)"
+trap 'rm -rf "$TMPDIR_RUN"' EXIT
+
+# GIT_ASKPASS shim so the PAT never appears in argv or remote URLs.
+ASKPASS="$TMPDIR_RUN/askpass.sh"
+cat >"$ASKPASS" <<'EOS'
+#!/usr/bin/env bash
+case "$1" in
+  Username*) echo "x-access-token" ;;
+  Password*) echo "${GH_TOKEN:-}" ;;
+esac
+EOS
+chmod 0700 "$ASKPASS"
+export GIT_ASKPASS="$ASKPASS"
+export GIT_TERMINAL_PROMPT=0
+
+# Strict charset validation
+is_valid_owner_or_repo() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$ ]]; }
+# Git branch names: allow common chars; disallow URL-meta and path tricks.
+is_valid_branch() { [[ "$1" =~ ^[A-Za-z0-9._/-]{1,200}$ && "$1" != *".."* && "$1" != /* && "$1" != */ ]]; }
+
 # --- Parse URL into owner/repo ---
 url="${PUBLIC_URL%.git}"
 url="${url%/}"
@@ -35,10 +58,19 @@ if [[ -z "$up_owner" || -z "$up_repo" || "$up_owner" == "$up_repo" ]]; then
   echo "::error::could not parse owner/repo from: $PUBLIC_URL"
   exit 1
 fi
+if ! is_valid_owner_or_repo "$up_owner" || ! is_valid_owner_or_repo "$up_repo"; then
+  echo "::error::upstream owner/repo contains unsupported characters"
+  exit 1
+fi
+if ! is_valid_owner_or_repo "$TARGET_OWNER"; then
+  echo "::error::TARGET_OWNER contains unsupported characters"
+  exit 1
+fi
 UPSTREAM_FULL="${up_owner}/${up_repo}"
 
 # --- Fetch upstream metadata (must be public + not archived) ---
-http=$(curl -sS -o /tmp/up.json -w '%{http_code}' \
+UP_JSON="$TMPDIR_RUN/up.json"
+http=$(curl -sS -o "$UP_JSON" -w '%{http_code}' \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GH_TOKEN}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -47,14 +79,13 @@ if [[ "$http" != "200" ]]; then
   echo "::error::upstream '$UPSTREAM_FULL' not reachable (HTTP $http)"
   exit 1
 fi
-visibility=$(jq -r '.visibility // (.private | if . then "private" else "public" end)' /tmp/up.json)
+visibility=$(jq -r '.visibility // (.private | if . then "private" else "public" end)' "$UP_JSON")
 if [[ "$visibility" != "public" ]]; then
   echo "::error::upstream '$UPSTREAM_FULL' is not public (visibility=$visibility)"
   exit 1
 fi
-default_branch=$(jq -r '.default_branch' /tmp/up.json)
-upstream_size_kb=$(jq -r '.size // 0' /tmp/up.json)
-description=$(jq -r '.description // ""' /tmp/up.json)
+default_branch=$(jq -r '.default_branch' "$UP_JSON")
+upstream_size_kb=$(jq -r '.size // 0' "$UP_JSON")
 
 # Refuse repos > 5 GB to keep runner safe
 if (( upstream_size_kb > 5 * 1024 * 1024 )); then
@@ -64,14 +95,23 @@ fi
 
 # --- Resolve branch ---
 if [[ -z "${BRANCH_INPUT:-}" ]]; then
+  if ! is_valid_branch "$default_branch"; then
+    echo "::error::upstream default_branch contains unsupported characters: $default_branch"
+    exit 1
+  fi
   BRANCH="$default_branch"
 elif [[ "$BRANCH_INPUT" == "all" ]]; then
   BRANCH="all"
 else
+  if ! is_valid_branch "$BRANCH_INPUT"; then
+    echo "::error::branch input contains unsupported characters: $BRANCH_INPUT"
+    exit 1
+  fi
   # confirm branch exists on upstream
   bhttp=$(curl -sS -o /dev/null -w '%{http_code}' \
     -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${GH_TOKEN}" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
     "https://api.github.com/repos/${UPSTREAM_FULL}/branches/${BRANCH_INPUT}")
   if [[ "$bhttp" != "200" ]]; then
     echo "::error::branch '$BRANCH_INPUT' not found on $UPSTREAM_FULL (HTTP $bhttp)"
@@ -93,6 +133,7 @@ PRIVATE_FULL="${TARGET_OWNER}/${PRIVATE_NAME}"
 existing_http=$(curl -sS -o /dev/null -w '%{http_code}' \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GH_TOKEN}" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
   "https://api.github.com/repos/${PRIVATE_FULL}")
 if [[ "$existing_http" == "200" ]]; then
   echo "::error::private repo '$PRIVATE_FULL' already exists — refusing to overwrite. Pick a different private_name or delete it first."
@@ -100,8 +141,8 @@ if [[ "$existing_http" == "200" ]]; then
 fi
 
 # --- Mirror clone ---
-workdir="$(mktemp -d)"
-trap 'rm -rf "$workdir"' EXIT
+workdir="$TMPDIR_RUN/work"
+mkdir -p "$workdir"
 cd "$workdir"
 
 clone_url="https://github.com/${UPSTREAM_FULL}.git"
@@ -109,22 +150,21 @@ echo "Cloning $clone_url ..."
 if [[ "$BRANCH" == "all" ]]; then
   git clone --mirror --no-tags "$clone_url" mirror.git
 else
-  # mirror clone restricted to single branch via refspec
+  # bare clone restricted to single branch
   git clone --bare --single-branch --branch "$BRANCH" --no-tags "$clone_url" mirror.git
 fi
 cd mirror.git
 
 # --- Create private repo ---
 echo "Creating private repo ${PRIVATE_FULL} ..."
-# Determine if target_owner is user or org for the create endpoint
-otype=$(jq -r '.type' /tmp/owner.json 2>/dev/null || echo "")
-if [[ -z "$otype" ]]; then
-  ohttp=$(curl -sS -o /tmp/owner.json -w '%{http_code}' \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    "https://api.github.com/users/${TARGET_OWNER}")
-  [[ "$ohttp" == "200" ]] || { echo "::error::target owner lookup failed"; exit 1; }
-  otype=$(jq -r '.type' /tmp/owner.json)
-fi
+OWNER_JSON="$TMPDIR_RUN/owner.json"
+ohttp=$(curl -sS -o "$OWNER_JSON" -w '%{http_code}' \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer ${GH_TOKEN}" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  "https://api.github.com/users/${TARGET_OWNER}")
+[[ "$ohttp" == "200" ]] || { echo "::error::target owner lookup failed (HTTP $ohttp)"; exit 1; }
+otype=$(jq -r '.type' "$OWNER_JSON")
 
 desc=$(jq -nc --arg d "Mirror of https://github.com/${UPSTREAM_FULL}" --arg n "$PRIVATE_NAME" \
   '{name:$n, description:$d, private:true, has_issues:true, has_projects:false, has_wiki:false, auto_init:false}')
@@ -135,18 +175,19 @@ else
   create_url="https://api.github.com/user/repos"
 fi
 
-chttp=$(curl -sS -o /tmp/create.json -w '%{http_code}' -X POST \
+CREATE_JSON="$TMPDIR_RUN/create.json"
+chttp=$(curl -sS -o "$CREATE_JSON" -w '%{http_code}' -X POST \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GH_TOKEN}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   -d "$desc" "$create_url")
 if [[ "$chttp" != "201" ]]; then
-  echo "::error::create private repo failed (HTTP $chttp): $(jq -r '.message // .' /tmp/create.json)"
+  echo "::error::create private repo failed (HTTP $chttp): $(jq -r '.message // .' "$CREATE_JSON")"
   exit 1
 fi
 
-# --- Push ---
-push_url="https://x-access-token:${GH_TOKEN}@github.com/${PRIVATE_FULL}.git"
+# --- Push (token via GIT_ASKPASS, never in URL/argv) ---
+push_url="https://github.com/${PRIVATE_FULL}.git"
 echo "Pushing to ${PRIVATE_FULL} ..."
 push_failed=0
 if [[ "$BRANCH" == "all" ]]; then
@@ -158,20 +199,29 @@ fi
 
 if (( push_failed )); then
   echo "::error::push failed — rolling back created private repo"
-  curl -sS -X DELETE \
+  rb_http=$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE \
+    -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${GH_TOKEN}" \
-    "https://api.github.com/repos/${PRIVATE_FULL}" || true
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    "https://api.github.com/repos/${PRIVATE_FULL}")
+  if [[ "$rb_http" != "204" ]]; then
+    echo "::warning::rollback DELETE returned HTTP $rb_http — orphan repo may remain at $PRIVATE_FULL"
+  fi
   exit 1
 fi
 
 # --- Set default branch on private to match ---
 db="$BRANCH"
 [[ "$BRANCH" == "all" ]] && db="$default_branch"
-curl -sS -X PATCH -o /dev/null \
+patch_http=$(curl -sS -o /dev/null -w '%{http_code}' -X PATCH \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GH_TOKEN}" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
   -d "$(jq -nc --arg b "$db" '{default_branch:$b}')" \
-  "https://api.github.com/repos/${PRIVATE_FULL}" || true
+  "https://api.github.com/repos/${PRIVATE_FULL}")
+if [[ "$patch_http" != "200" ]]; then
+  echo "::warning::failed to set default_branch on $PRIVATE_FULL (HTTP $patch_http) — verify manually"
+fi
 
 # --- Outputs ---
 {
