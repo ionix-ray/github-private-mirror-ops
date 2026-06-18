@@ -1,0 +1,125 @@
+name: Bulk Import Public Repos
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_owner:
+        description: "GitHub owner (user or org) to import public repos from"
+        required: true
+        type: string
+      target_owner:
+        description: "Where private mirrors land"
+        required: true
+        type: choice
+        options:
+          - samirparhi-dev
+          - cyfen-code
+          - ionix-ray
+      branch:
+        description: "Branch to mirror. Leave empty for upstream default. 'all' = every branch."
+        required: false
+        type: string
+        default: ""
+      max_repos:
+        description: "Maximum repos to import (safety cap, max 200)"
+        required: false
+        type: number
+        default: 50
+      dry_run:
+        description: "Show what would be imported without actually doing it"
+        required: false
+        type: boolean
+        default: true
+      delete_original:
+        description: "WARNING: Delete original public repos after mirroring. Only works if you own them."
+        required: false
+        type: boolean
+        default: false
+      confirmation_phrase:
+        description: "To enable deletion, type exactly: DELETE_ORIGINAL_REPOS"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: bulk-import
+  cancel-in-progress: false
+
+jobs:
+  resolve-secret:
+    runs-on: ubuntu-latest
+    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
+    outputs:
+      secret_name: ${{ steps.pick.outputs.name }}
+    steps:
+      - id: pick
+        env:
+          OWNER: ${{ github.event.inputs.target_owner }}
+        run: |
+          set -euo pipefail
+          case "$OWNER" in
+            samirparhi-dev) name="GH_SYNC_PAT_SAMIRPARHI_DEV" ;;
+            cyfen-code)     name="GH_SYNC_PAT_CYFEN_CODE" ;;
+            ionix-ray)      name="GH_SYNC_PAT_IONIX_RAY" ;;
+            *) echo "::error::unknown target_owner '$OWNER'"; exit 1 ;;
+          esac
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+  import:
+    needs: resolve-secret
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
+    env:
+      GH_TOKEN: ${{ secrets[needs.resolve-secret.outputs.secret_name] }}
+      SOURCE_OWNER: ${{ github.event.inputs.source_owner }}
+      TARGET_OWNER: ${{ github.event.inputs.target_owner }}
+      BRANCH_INPUT: ${{ github.event.inputs.branch }}
+      MAX_REPOS: ${{ github.event.inputs.max_repos }}
+      DRY_RUN: ${{ github.event.inputs.dry_run }}
+      DELETE_ORIGINAL: ${{ github.event.inputs.delete_original }}
+      CONFIRMATION_PHRASE: ${{ github.event.inputs.confirmation_phrase }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+    steps:
+      - name: Checkout ops repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          token: ${{ secrets[needs.resolve-secret.outputs.secret_name] }}
+          persist-credentials: true
+
+      - name: Mask token
+        run: |
+          if [ -n "${GH_TOKEN:-}" ]; then echo "::add-mask::$GH_TOKEN"; fi
+          test -n "${GH_TOKEN:-}" || { echo "::error::GH_TOKEN is empty"; exit 1; }
+
+      - name: Install yq + jq
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y jq
+          if ! command -v yq >/dev/null 2>&1; then
+            sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+            sudo chmod +x /usr/local/bin/yq
+          fi
+          yq --version
+          jq --version
+
+      - name: Bulk import
+        run: bash .github/scripts/bulk-import.sh
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Bulk Import Results"
+            echo
+            echo "- Source: \`${SOURCE_OWNER}\`"
+            echo "- Target: \`${TARGET_OWNER}\`"
+            echo "- Branch: \`${BRANCH_INPUT:-(default)}\`"
+            echo "- Dry run: \`${DRY_RUN}\`"
+            echo "- Delete original: \`${DELETE_ORIGINAL}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
