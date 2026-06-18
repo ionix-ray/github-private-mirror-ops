@@ -35,8 +35,23 @@ jobs:
       - name: bash -n syntax
         run: find .github/scripts -name '*.sh' -exec bash -n {} \;
 
-      - name: actionlint
-        uses: raven-actions/actionlint@3a24062651993d40fed1019b58ac6fbdfbf276cc # v2.0.0
+      - name: install actionlint (pinned + sha256 verified)
+        env:
+          ACTIONLINT_VERSION: "1.7.12"
+          ACTIONLINT_SHA256:  "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          url="https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL --retry 3 --retry-delay 2 -o "$tmp/actionlint.tgz" "$url"
+          echo "${ACTIONLINT_SHA256}  $tmp/actionlint.tgz" | sha256sum -c -
+          tar -xzf "$tmp/actionlint.tgz" -C "$tmp"
+          sudo install -m 0755 "$tmp/actionlint" /usr/local/bin/actionlint
+          rm -rf "$tmp"
+          actionlint -version
+
+      - name: run actionlint
+        run: actionlint -color
 
       - name: registry schema check
         run: |
