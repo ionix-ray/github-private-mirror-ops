@@ -3,6 +3,7 @@
 ```
 github-private-mirror-ops/
 ├── docs/
+│   └── file_tree.md  [docs]
 ├── github-private-mirror-ops/
 │   ├── .github/
 │   │   ├── scripts/
