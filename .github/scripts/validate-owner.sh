@@ -17,7 +17,8 @@ if ! [[ "$OWNER" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$ ]]; then
   exit 1
 fi
 
-TMPDIR_RUN="$(mktemp -d -t valown.XXXXXXXX)"
+TMPDIR_RUN="$(0)"
+chmod 0700 "$TMPDIR_RUN"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 OWNER_JSON="$TMPDIR_RUN/owner.json"
 ME_JSON="$TMPDIR_RUN/me.json"

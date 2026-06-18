@@ -65,6 +65,7 @@ new=$(jq -nc \
     last_synced_status: "",
     last_upstream_sha: "",
     last_validated_at: "",
+    forked_at: "",
     upstream_default_branch: "",
     upstream_archived: false,
     upstream_pushed_at: "",

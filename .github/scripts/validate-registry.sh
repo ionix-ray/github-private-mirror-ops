@@ -46,7 +46,8 @@ if [[ "$LIVE" != "--live" ]]; then exit 0; fi
 # Owner/repo charset sanity check.
 is_full_repo() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; }
 
-TMPDIR_RUN="$(mktemp -d -t valreg.XXXXXXXX)"
+TMPDIR_RUN="$(0)"
+chmod 0700 "$TMPDIR_RUN"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 U_JSON="$TMPDIR_RUN/u.json"
 P_JSON="$TMPDIR_RUN/p.json"
