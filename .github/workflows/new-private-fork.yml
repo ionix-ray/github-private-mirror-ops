@@ -26,7 +26,7 @@ on:
         type: string
         default: ""
       register_for_sync:
-        description: "Register in synced-repos.yml for daily cron sync"
+        description: "Register in tracker/registry for daily cron sync"
         required: false
         type: boolean
         default: true
@@ -90,8 +90,8 @@ jobs:
           if [ -n "${GH_TOKEN:-}" ]; then echo "::add-mask::$GH_TOKEN"; fi
           test -n "${GH_TOKEN:-}" || { echo "::error::secret ${{ needs.resolve-secret.outputs.secret_name }} is empty or missing"; exit 1; }
 
-      - name: Install yq
-        uses: mikefarah/yq@bbdd97482f2d439126582a59689eb1c855944955 # v4.44.3
+      - name: Install jq
+        run: sudo apt-get update -qq && sudo apt-get install -y jq
 
       - name: Validate target owner + scopes
         run: bash .github/scripts/validate-owner.sh "$TARGET_OWNER"
@@ -100,11 +100,11 @@ jobs:
         id: mirror
         run: bash .github/scripts/mirror-clone-push.sh
 
-      - name: Capture upstream license + metadata
-        if: steps.mirror.outputs.private_full != ''
-        run: bash .github/scripts/capture-license.sh "${{ steps.mirror.outputs.upstream_full }}"
+      # No metadata is written on registration. Observed state (license, stars,
+      # etc.) is filled in by the daily Sync workflow AFTER the intent PR merges,
+      # into tracker/metadata/* — keeping the PR a single-file, conflict-free add.
 
-      - name: Register in synced-repos.yml (PR)
+      - name: Register in tracker/registry (PR)
         if: ${{ inputs.register_for_sync && steps.mirror.outputs.private_full != '' }}
         env:
           UPSTREAM_FULL: ${{ steps.mirror.outputs.upstream_full }}

@@ -1,0 +1,7 @@
+{
+  "defaults": {
+    "schedule": "0 6 * * *",
+    "strategy": "fast-forward"
+  },
+  "version": 1
+}

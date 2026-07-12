@@ -1,0 +1,7 @@
+{
+  "branch": "main",
+  "pause_reason": "",
+  "paused": false,
+  "private": "ionix-ray/cli",
+  "upstream": "belt-sh/cli"
+}

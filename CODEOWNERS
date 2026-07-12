@@ -1,0 +1,10 @@
+# Everything in this repo requires owner review by default.
+*                       @samirparhi-dev
+
+# Intent is human/PR-owned — registration and pause/unpause changes must be reviewed.
+/tracker/registry/      @samirparhi-dev
+/tracker/config.json    @samirparhi-dev
+/tracker/schemas/       @samirparhi-dev
+
+# NOTE: /tracker/metadata/, repo-status.json, README.md and REPO_STATUS.md are
+# written by the sync workflow (bot) and committed directly with [skip ci].

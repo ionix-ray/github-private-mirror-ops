@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/samirparhi-dev/github-private-mirror-ops/schemas/config.schema.json",
+  "title": "registry config (_config.json)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "defaults"],
+  "properties": {
+    "version": { "const": 1 },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schedule", "strategy"],
+      "properties": {
+        "schedule": { "type": "string", "minLength": 1 },
+        "strategy": { "enum": ["fast-forward"] }
+      }
+    }
+  }
+}
