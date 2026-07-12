@@ -51,12 +51,16 @@ github-private-mirror-ops/
 │   ├── metadata/
 │   │   ├── ionix-ray__carbon-charts.json  [config]
 │   │   ├── ionix-ray__cli.json  [config]
+│   │   ├── ionix-ray__PiRanha.json  [config]
 │   │   ├── ionix-ray__pixie.json  [config]
+│   │   ├── ionix-ray__qiskit.json  [config]
 │   │   └── ionix-ray__wgpu.json  [config]
 │   ├── registry/
 │   │   ├── ionix-ray__carbon-charts.json  [config]
 │   │   ├── ionix-ray__cli.json  [config]
+│   │   ├── ionix-ray__PiRanha.json  [config]
 │   │   ├── ionix-ray__pixie.json  [config]
+│   │   ├── ionix-ray__qiskit.json  [config]
 │   │   └── ionix-ray__wgpu.json  [config]
 │   ├── schemas/
 │   │   ├── config.schema.json  [config]
