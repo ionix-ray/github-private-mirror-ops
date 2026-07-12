@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/samirparhi-dev/github-private-mirror-ops/schemas/registry-record.schema.json",
+  "$id": "https://github.com/ionix-ray/github-private-mirror-ops/schemas/registry-record.schema.json",
   "title": "registry record (tracker/registry/<key>.json)",
   "description": "Declared INTENT for one mirror. Human/PR-owned. One file per mirror so registration is purely additive and never conflicts. Workflows/bots MUST NOT write these files.",
   "type": "object",

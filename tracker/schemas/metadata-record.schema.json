@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/samirparhi-dev/github-private-mirror-ops/schemas/metadata-record.schema.json",
+  "$id": "https://github.com/ionix-ray/github-private-mirror-ops/schemas/metadata-record.schema.json",
   "title": "metadata record (tracker/metadata/<key>.json)",
   "description": "Observed/derived state for one mirror, cached from GitHub + sync runs. BOT-owned: written only by workflows, never hand-edited and never touched by registration PRs. One file per mirror.",
   "type": "object",

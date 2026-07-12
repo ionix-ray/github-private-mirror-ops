@@ -21,8 +21,6 @@ github-private-mirror-ops/
 │       ├── lint.yml
 │       ├── new-private-fork.yml
 │       └── sync-status.yml
-├── .kimchi/
-│   └── ferments/
 ├── docs/
 │   ├── conflict-free-registry.md  [docs]
 │   └── file_tree.md  [docs]
