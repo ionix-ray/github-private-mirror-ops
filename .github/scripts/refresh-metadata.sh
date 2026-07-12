@@ -79,7 +79,6 @@ for rf in "${reg_files[@]}"; do
   fi
   if [[ "$uh" == "404" || "$uh" == "451" ]]; then
     echo "::notice::upstream $up not reachable (HTTP $uh) — marking deleted"
-    tmp="$TMPDIR_RUN/m.json"
     { [[ -f "$mf" ]] && cat "$mf" || jq -nc --arg up "$up" --arg pr "$pr" '{upstream:$up,private:$pr}'; } \
       | jq --arg ts "$now_iso" '.upstream_state="deleted" | .refreshed_at=$ts' \
       | write_json_stable "$mf"
