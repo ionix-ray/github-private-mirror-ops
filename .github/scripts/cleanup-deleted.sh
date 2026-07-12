@@ -1,115 +1,86 @@
 #!/usr/bin/env bash
 # cleanup-deleted.sh
-# Scans .github/synced-repos.yml and removes entries where the upstream
-# or private repo no longer exists (HTTP 404/451). Also marks archived upstreams.
-# Safe: writes only after confirming changes; idempotent on clean registry.
+# Scans intent records and checks upstream/private liveness. Instead of deleting
+# intent (which is human/PR-owned and would reintroduce write contention), it
+# records the observation in the BOT-owned metadata record:
+#     upstream_state = active | archived | deleted
+# Removing an intent record is a deliberate human action (delete the file via PR).
 #
-# Env: GH_TOKEN, REG (optional, default .github/synced-repos.yml)
+# Env: GH_TOKEN, FULL_REFRESH (unused; accepted for workflow compatibility)
 
 set -euo pipefail
 
-: "${GH_TOKEN:?}" || { echo "::error::GH_TOKEN required"; exit 1; }
-REG="${REG:-.github/synced-repos.yml}"
+: "${GH_TOKEN:?GH_TOKEN required}"
 
-if [[ ! -f "$REG" ]]; then
-  echo "registry missing — nothing to clean"
-  exit 0
-fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-tracker.sh"
+
+mkdir -p "$META_DIR"
+mapfile -t reg_files < <(list_registry_files)
+(( ${#reg_files[@]} == 0 )) && { echo "no intent records — nothing to check"; exit 0; }
 
 TMPDIR_RUN="$(mktemp -d -t cleanup.XXXXXXXX)"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 chmod 0700 "$TMPDIR_RUN"
-
 U_JSON="$TMPDIR_RUN/up.json"
 P_JSON="$TMPDIR_RUN/pr.json"
-RATE_LIMIT_CHECK="$TMPDIR_RUN/ratelimit.json"
+RL_JSON="$TMPDIR_RUN/rl.json"
 
-# --- Rate limit sanity check first ---
-rl=$(curl -sS -o "$RATE_LIMIT_CHECK" -w '%{http_code}' \
+rl=$(curl -sS -o "$RL_JSON" -w '%{http_code}' \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GH_TOKEN}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/rate_limit")
+  "https://api.github.com/rate_limit" || echo 000)
 if [[ "$rl" == "200" ]]; then
-  remaining=$(jq -r '.resources.core.remaining // 0' "$RATE_LIMIT_CHECK")
-  if (( remaining < 50 )); then
-    echo "::warning::rate limit low ($remaining remaining) — skipping cleanup"
-    exit 0
-  fi
+  remaining=$(jq -r '.resources.core.remaining // 0' "$RL_JSON")
+  (( remaining < 50 )) && { echo "::warning::rate limit low ($remaining) — skipping cleanup"; exit 0; }
 fi
 
-count=$(yq -r '.repos | length' "$REG")
-[[ "$count" =~ ^[0-9]+$ ]] || { echo "::error::invalid repo count"; exit 1; }
-(( count == 0 )) && { echo "registry empty — nothing to clean"; exit 0; }
+now_iso="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+marked=0
 
-deleted_indices=()
-for i in $(seq 0 $((count - 1))); do
-  up=$(IDX="$i" yq -r '.repos[env(IDX) | tonumber].upstream' "$REG")
-  pr=$(IDX="$i" yq -r '.repos[env(IDX) | tonumber].private'  "$REG")
+set_state() {  # key state
+  local key="$1" state="$2" up="$3" pr="$4"
+  local mf="$META_DIR/$key.json"
+  { [[ -f "$mf" ]] && cat "$mf" || jq -nc --arg up "$up" --arg pr "$pr" '{upstream:$up,private:$pr}'; } \
+    | jq --arg s "$state" --arg ts "$now_iso" '.upstream_state=$s | .last_validated_at=$ts' \
+    | write_json_stable "$mf"
+}
 
-  if ! [[ "$up" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
-    echo "::warning::malformed upstream '$up' at index $i — skipping"
-    continue
-  fi
-  if ! [[ "$pr" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
-    echo "::warning::malformed private '$pr' at index $i — skipping"
-    continue
-  fi
+for rf in "${reg_files[@]}"; do
+  up=$(jq -r '.upstream' "$rf")
+  pr=$(jq -r '.private'  "$rf")
+  key="$(tracker_key "$pr")"
+  is_full_repo "$up" && is_full_repo "$pr" || { echo "::warning::malformed record $(basename "$rf") — skip"; continue; }
 
-  uh=$(curl -sS -o "$U_JSON" -w '%{http_code}' \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/${up}" 2>/dev/null || echo "000")
-  ph=$(curl -sS -o "$P_JSON" -w '%{http_code}' \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/${pr}" 2>/dev/null || echo "000")
+  uh=$(curl -sS -o "$U_JSON" -w '%{http_code}' -H "Accept: application/vnd.github+json" \
+    -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" \
+    "https://api.github.com/repos/${up}" 2>/dev/null || echo 000)
+  ph=$(curl -sS -o "$P_JSON" -w '%{http_code}' -H "Accept: application/vnd.github+json" \
+    -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" \
+    "https://api.github.com/repos/${pr}" 2>/dev/null || echo 000)
 
   if [[ "$uh" == "403" || "$ph" == "403" ]]; then
     msg=$(jq -r '.message // ""' "$U_JSON" 2>/dev/null || true)
-    if [[ "$msg" == *"rate limit"* ]]; then
-      echo "::error::GitHub rate limit hit — aborting cleanup"
-      exit 1
-    fi
+    [[ "$msg" == *"rate limit"* ]] && { echo "::error::rate limit hit — aborting cleanup"; exit 1; }
   fi
 
-  remove=0
-  reason=""
   if [[ "$uh" == "404" || "$uh" == "451" ]]; then
-    remove=1
-    reason="upstream deleted (HTTP $uh)"
-  elif [[ "$ph" == "404" || "$ph" == "451" ]]; then
-    remove=1
-    reason="private deleted (HTTP $ph)"
-  elif [[ "$uh" == "000" && "$ph" == "000" ]]; then
-    echo "::warning::network failure checking $up / $pr — skipping"
-    continue
+    set_state "$key" deleted "$up" "$pr"; marked=$((marked+1))
+    echo "::notice::$up upstream deleted (HTTP $uh) — marked deleted"; continue
   fi
-
-  # Mark archived upstreams
+  if [[ "$ph" == "404" || "$ph" == "451" ]]; then
+    set_state "$key" deleted "$up" "$pr"; marked=$((marked+1))
+    echo "::notice::$pr private deleted (HTTP $ph) — marked deleted"; continue
+  fi
+  if [[ "$uh" == "000" && "$ph" == "000" ]]; then
+    echo "::warning::network failure checking $up / $pr — skip"; continue
+  fi
   if [[ "$uh" == "200" ]]; then
     arch=$(jq -r '.archived // false' "$U_JSON")
-    if [[ "$arch" == "true" ]]; then
-      IDX="$i" ARCH="$arch" \
-        yq -i '.repos[env(IDX) | tonumber].upstream_archived = (env(ARCH) == "true")' "$REG"
-    fi
-  fi
-
-  if (( remove )); then
-    echo "::notice::removing $up -> $pr ($reason)"
-    deleted_indices+=("$i")
+    [[ "$arch" == "true" ]] && { set_state "$key" archived "$up" "$pr"; echo "::notice::$up archived"; }
   fi
 done
 
-# Remove from highest index downward to preserve ordering
-if (( ${#deleted_indices[@]} > 0 )); then
-  mapfile -t sorted < <(printf '%s\n' "${deleted_indices[@]}" | sort -rn)
-  for idx in "${sorted[@]}"; do
-    IDX="$idx" yq -i 'del(.repos[env(IDX) | tonumber])' "$REG"
-  done
-  echo "cleaned ${#deleted_indices[@]} deleted repo(s)"
-else
-  echo "no deleted repos found"
-fi
+echo "cleanup: $marked record(s) marked deleted (intent files preserved)"

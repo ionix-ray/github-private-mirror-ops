@@ -1,0 +1,7 @@
+{
+  "branch": "trunk",
+  "pause_reason": "",
+  "paused": false,
+  "private": "ionix-ray/wgpu",
+  "upstream": "gfx-rs/wgpu"
+}

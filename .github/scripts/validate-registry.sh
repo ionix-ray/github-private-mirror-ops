@@ -1,114 +1,127 @@
 #!/usr/bin/env bash
-# validate-registry.sh
-# Schema + semantic checks on .github/synced-repos.yml.
-# Exits non-zero on CRITICAL. WARN/NOTABLE only logged.
-# Skips upstream/private liveness checks unless --live is passed (those need GH_TOKEN).
+# validate-registry.sh [--live]
+# Offline: validates tracker/config.json + every tracker/registry/*.json and
+# tracker/metadata/*.json against tracker/schemas/*, checks cross-record invariants
+# (unique upstream, unique private, key matches private, metadata orphans).
+# --live: additionally verifies upstream/private reachability (needs GH_TOKEN).
+#
+# Honors TRACKER_DIR so tests can point it at a fixture tree.
 
 set -euo pipefail
 
-REG=".github/synced-repos.yml"
-SCHEMA=".github/registry.schema.json"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-tracker.sh"
+
 LIVE="${1:-}"
 
-if [[ ! -f "$REG" ]]; then
-  echo "::error::registry $REG missing"
-  exit 1
-fi
+[[ -d "$REG_DIR" ]]    || { echo "::error::registry dir $REG_DIR missing"; exit 1; }
+[[ -d "$SCHEMA_DIR" ]] || { echo "::error::schema dir $SCHEMA_DIR missing"; exit 1; }
 
-# YAML parseable
-yq '.' "$REG" >/dev/null
+python3 - "$CONFIG_FILE" "$REG_DIR" "$META_DIR" "$SCHEMA_DIR" << 'PY'
+import json, sys, os, glob, re
+try:
+    import jsonschema
+except Exception as e:
+    print(f"::error::jsonschema not installed: {e}"); sys.exit(2)
 
-# JSON schema (uses python jsonschema if available, else skip with warning)
-if command -v python3 >/dev/null 2>&1 && python3 -c 'import jsonschema' 2>/dev/null; then
-  python3 - "$REG" "$SCHEMA" <<'PY'
-import json, sys, yaml, jsonschema
-reg = yaml.safe_load(open(sys.argv[1]))
-schema = json.load(open(sys.argv[2]))
-jsonschema.validate(reg, schema)
-print("schema OK")
+config_file, reg_dir, meta_dir, schema_dir = sys.argv[1:5]
+errors = []
+
+def load(p):
+    with open(p) as f: return json.load(f)
+
+cfg_schema  = load(os.path.join(schema_dir, "config.schema.json"))
+reg_schema  = load(os.path.join(schema_dir, "registry-record.schema.json"))
+meta_schema = load(os.path.join(schema_dir, "metadata-record.schema.json"))
+
+def key(full): return full.replace("/", "__")
+
+# --- config.json ---
+if not os.path.exists(config_file):
+    errors.append(f"{config_file}: missing")
+else:
+    try:
+        jsonschema.validate(load(config_file), cfg_schema)
+    except jsonschema.ValidationError as e:
+        errors.append(f"{config_file}: {e.message}")
+
+# --- intent records ---
+upstreams, privates = {}, {}
+reg_files = sorted(glob.glob(os.path.join(reg_dir, "*.json")))
+for rf in reg_files:
+    base = os.path.basename(rf)
+    try:
+        rec = load(rf)
+    except json.JSONDecodeError as e:
+        errors.append(f"{base}: invalid JSON ({e})"); continue
+    try:
+        jsonschema.validate(rec, reg_schema)
+    except jsonschema.ValidationError as e:
+        errors.append(f"{base}: {e.message}"); continue
+    up, pr = rec["upstream"], rec["private"]
+    expected = key(pr) + ".json"
+    if base != expected:
+        errors.append(f"{base}: filename must match private key ({expected})")
+    if up in upstreams:
+        errors.append(f"duplicate upstream {up} in {base} and {upstreams[up]}")
+    upstreams[up] = base
+    if pr in privates:
+        errors.append(f"duplicate private {pr} in {base} and {privates[pr]}")
+    privates[pr] = base
+
+# --- metadata records ---
+meta_files = sorted(glob.glob(os.path.join(meta_dir, "*.json"))) if os.path.isdir(meta_dir) else []
+reg_keys = set()
+for rf in reg_files:
+    try: reg_keys.add(key(load(rf)["private"]))
+    except Exception: pass
+
+for mf in meta_files:
+    base = os.path.basename(mf)
+    try:
+        rec = load(mf)
+    except json.JSONDecodeError as e:
+        errors.append(f"{base}: invalid JSON ({e})"); continue
+    try:
+        jsonschema.validate(rec, meta_schema)
+    except jsonschema.ValidationError as e:
+        errors.append(f"metadata/{base}: {e.message}"); continue
+    k = base[:-5]
+    if k not in reg_keys:
+        errors.append(f"metadata/{base}: orphan (no matching intent record)")
+
+if errors:
+    print(f"::error::validation failed ({len(errors)} error(s))")
+    for e in errors: print(f"  - {e}")
+    sys.exit(1)
+print(f"registry valid: {len(reg_files)} intent record(s), {len(meta_files)} metadata record(s)")
 PY
-else
-  echo "::warning::python jsonschema not available — skipping JSON-schema validation"
-fi
-
-# Duplicate detection
-dup_up=$(yq -r '.repos | group_by(.upstream) | map(select(length > 1)) | length' "$REG")
-dup_pr=$(yq -r '.repos | group_by(.private)  | map(select(length > 1)) | length' "$REG")
-if [[ "$dup_up" != "0" ]]; then echo "::error::duplicate upstream entries in registry"; exit 1; fi
-if [[ "$dup_pr" != "0" ]]; then echo "::error::duplicate private entries in registry";  exit 1; fi
-
-count=$(yq -r '.repos | length' "$REG")
-echo "registry valid: $count repo(s)"
+offline_rc=$?
+[[ $offline_rc -eq 0 ]] || exit $offline_rc
 
 if [[ "$LIVE" != "--live" ]]; then exit 0; fi
 : "${GH_TOKEN:?live mode requires GH_TOKEN}"
 
-# Owner/repo charset sanity check.
-is_full_repo() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; }
-
-TMPDIR_RUN="$(0)"
-chmod 0700 "$TMPDIR_RUN"
+TMPDIR_RUN="$(mktemp -d -t validate.XXXXXXXX)"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
-U_JSON="$TMPDIR_RUN/u.json"
-P_JSON="$TMPDIR_RUN/p.json"
-
-critical=0
-warn=0
-notable=0
-for i in $(seq 0 $((count - 1))); do
-  up=$(IDX="$i" yq -r '.repos[env(IDX) | tonumber].upstream' "$REG")
-  pr=$(IDX="$i" yq -r '.repos[env(IDX) | tonumber].private'  "$REG")
-
-  if ! is_full_repo "$up" || ! is_full_repo "$pr"; then
-    echo "::error::CRITICAL: registry entry $i has malformed upstream/private"
-    critical=$((critical+1))
-    continue
-  fi
-
-  # upstream reachable
-  uh=$(curl -sS -o "$U_JSON" -w '%{http_code}' \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
+U_JSON="$TMPDIR_RUN/u.json"; P_JSON="$TMPDIR_RUN/p.json"
+critical=0; warn=0
+while IFS= read -r rf; do
+  [[ -z "$rf" ]] && continue
+  up=$(jq -r '.upstream' "$rf"); pr=$(jq -r '.private' "$rf")
+  is_full_repo "$up" && is_full_repo "$pr" || { echo "::error::CRITICAL: malformed $(basename "$rf")"; critical=$((critical+1)); continue; }
+  uh=$(curl -sS -o "$U_JSON" -w '%{http_code}' -H "Accept: application/vnd.github+json" \
+    -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" \
     "https://api.github.com/repos/${up}")
-  if [[ "$uh" != "200" ]]; then
-    echo "::error::CRITICAL: upstream $up unreachable (HTTP $uh)"
-    critical=$((critical+1))
-    continue
-  fi
-
-  # private exists + visibility=private
-  ph=$(curl -sS -o "$P_JSON" -w '%{http_code}' \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
+  [[ "$uh" == "200" ]] || { echo "::error::CRITICAL: upstream $up unreachable (HTTP $uh)"; critical=$((critical+1)); continue; }
+  ph=$(curl -sS -o "$P_JSON" -w '%{http_code}' -H "Accept: application/vnd.github+json" \
+    -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" \
     "https://api.github.com/repos/${pr}")
-  if [[ "$ph" != "200" ]]; then
-    echo "::error::CRITICAL: private $pr unreachable (HTTP $ph)"
-    critical=$((critical+1))
-    continue
-  fi
+  [[ "$ph" == "200" ]] || { echo "::error::CRITICAL: private $pr unreachable (HTTP $ph)"; critical=$((critical+1)); continue; }
   vis=$(jq -r '.visibility // (.private | if . then "private" else "public" end)' "$P_JSON")
-  if [[ "$vis" != "private" ]]; then
-    echo "::error::CRITICAL: $pr visibility=$vis — must be private"
-    critical=$((critical+1))
-  fi
-
-  # archived upstream
-  arch=$(jq -r '.archived' "$U_JSON")
-  if [[ "$arch" == "true" ]]; then
-    echo "::warning::WARN: upstream $up is archived — consider pausing"
-    warn=$((warn+1))
-  fi
-
-  # default branch drift
-  udb=$(jq -r '.default_branch' "$U_JSON")
-  tdb=$(IDX="$i" yq -r '.repos[env(IDX) | tonumber].upstream_default_branch // ""' "$REG")
-  if [[ -n "$tdb" && "$udb" != "$tdb" ]]; then
-    echo "::warning::WARN: $up default_branch changed $tdb -> $udb"
-    warn=$((warn+1))
-  fi
-done
-
-echo "validation: critical=$critical warn=$warn notable=$notable"
+  [[ "$vis" == "private" ]] || { echo "::error::CRITICAL: $pr visibility=$vis — must be private"; critical=$((critical+1)); }
+  [[ "$(jq -r '.archived' "$U_JSON")" == "true" ]] && { echo "::warning::WARN: upstream $up archived"; warn=$((warn+1)); }
+done < <(list_registry_files)
+echo "validation: critical=$critical warn=$warn"
 [[ "$critical" == "0" ]] || exit 1

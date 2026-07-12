@@ -97,14 +97,9 @@ jobs:
           if [ -n "${GH_TOKEN:-}" ]; then echo "::add-mask::$GH_TOKEN"; fi
           test -n "${GH_TOKEN:-}" || { echo "::error::GH_TOKEN is empty"; exit 1; }
 
-      - name: Install yq + jq
+      - name: Install jq
         run: |
           sudo apt-get update -qq && sudo apt-get install -y jq
-          if ! command -v yq >/dev/null 2>&1; then
-            sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
-            sudo chmod +x /usr/local/bin/yq
-          fi
-          yq --version
           jq --version
 
       - name: Bulk import

@@ -24,7 +24,10 @@ MAX_REPOS="${MAX_REPOS:-50}"
 DRY_RUN="${DRY_RUN:-true}"
 DELETE_ORIGINAL="${DELETE_ORIGINAL:-false}"
 CONFIRMATION_PHRASE="${CONFIRMATION_PHRASE:-}"
-REG="${REG:-.github/synced-repos.yml}"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-tracker.sh"
 
 # Charset hardening
 if ! [[ "$SOURCE_OWNER" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$ ]]; then
@@ -135,9 +138,13 @@ while IFS= read -r repo; do
   echo ""
   echo "--- mirroring $repo -> $TARGET_OWNER ---"
 
-  # Check if already registered (idempotency)
-  dup=$(UP="$repo" yq -r '.repos | map(select(.upstream == strenv(UP))) | length' "$REG")
-  if [[ "$dup" != "0" ]]; then
+  # Check if already registered (idempotency) — scan intent records.
+  dup=0
+  while IFS= read -r rf; do
+    [[ -z "$rf" ]] && continue
+    [[ "$(jq -r '.upstream' "$rf")" == "$repo" ]] && { dup=1; break; }
+  done < <(list_registry_files)
+  if (( dup )); then
     echo "already registered — skip"
     skipped=$((skipped + 1))
     continue
