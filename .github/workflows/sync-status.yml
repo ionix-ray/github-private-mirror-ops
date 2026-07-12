@@ -34,18 +34,41 @@ env:
   JSON_OUT: 'repo-status.json'
   MD_OUT: 'REPO_STATUS.md'
   README_OUT: 'README.md'
+  # Owner whose repos this dashboard syncs. Override per-repo via the
+  # SYNC_OWNER Actions variable; defaults to the repo owner.
+  SYNC_OWNER: ${{ vars.SYNC_OWNER || 'ionix-ray' }}
 
 jobs:
-  update:
+  resolve-secret:
     runs-on: ubuntu-latest
-    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
+    # Maps SYNC_OWNER to its per-owner PAT secret name.
+    # The secret itself is only consumed by later jobs via the resolved name.
+    outputs:
+      secret_name: ${{ steps.pick.outputs.name }}
+    steps:
+      - id: pick
+        env:
+          OWNER: ${{ env.SYNC_OWNER }}
+        run: |
+          set -euo pipefail
+          case "$OWNER" in
+            cyfen-code)     name="GH_SYNC_PAT_CYFEN_CODE" ;;
+            ionix-ray)      name="GH_SYNC_PAT_IONIX_RAY" ;;
+            *) echo "::error::unknown SYNC_OWNER '$OWNER'"; exit 1 ;;
+          esac
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+  update:
+    needs: [resolve-secret]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.resolve-secret.outputs.secret_name }}
     env:
-      GH_TOKEN: ${{ secrets.GH_SYNC_PAT_SAMIRPARHI_DEV }}
+      GH_TOKEN: ${{ secrets[needs.resolve-secret.outputs.secret_name] }}
     steps:
       - name: Checkout ops repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
-          token: ${{ secrets.GH_SYNC_PAT_SAMIRPARHI_DEV }}
+          token: ${{ secrets[needs.resolve-secret.outputs.secret_name] }}
           persist-credentials: true
 
       - name: Mask token

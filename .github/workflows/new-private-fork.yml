@@ -12,7 +12,6 @@ on:
         required: true
         type: choice
         options:
-          - samirparhi-dev
           - cyfen-code
           - ionix-ray
       branch:
@@ -43,9 +42,8 @@ concurrency:
 jobs:
   resolve-secret:
     runs-on: ubuntu-latest
-    # All jobs run in the GH_SYNC_PAT_SAMIRPARHI_DEV environment.
-    # PATs + GIT_AUTHOR_* live in that environment's Secrets/Variables only.
-    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
+    # Maps the chosen target_owner to its per-owner PAT secret name.
+    # The secret itself is only consumed by later jobs via the resolved name.
     outputs:
       secret_name: ${{ steps.pick.outputs.name }}
     steps:
@@ -55,7 +53,6 @@ jobs:
         run: |
           set -euo pipefail
           case "$OWNER" in
-            samirparhi-dev) name="GH_SYNC_PAT_SAMIRPARHI_DEV" ;;
             cyfen-code)     name="GH_SYNC_PAT_CYFEN_CODE" ;;
             ionix-ray)      name="GH_SYNC_PAT_IONIX_RAY" ;;
             *) echo "::error::unknown target_owner '$OWNER'"; exit 1 ;;
@@ -66,7 +63,7 @@ jobs:
     needs: resolve-secret
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
+    environment: ${{ needs.resolve-secret.outputs.secret_name }}
     env:
       GH_TOKEN: ${{ secrets[needs.resolve-secret.outputs.secret_name] }}
       PUBLIC_URL: ${{ inputs.public_url }}
