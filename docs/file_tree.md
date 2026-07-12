@@ -4,47 +4,70 @@
 github-private-mirror-ops/
 ├── .github/
 │   ├── scripts/
-│   │   ├── lib-tracker.sh          [shared paths + helpers]
 │   │   ├── bulk-import.sh
-│   │   ├── capture-license.sh      [bot: writes metadata only]
-│   │   ├── cleanup-deleted.sh      [bot: marks metadata state]
-│   │   ├── generate-json.sh        [bot: joins intent+metadata -> repo-status.json]
-│   │   ├── generate-md.sh          [bot: repo-status.json -> REPO_STATUS.md]
+│   │   ├── capture-license.sh
+│   │   ├── cleanup-deleted.sh
+│   │   ├── generate-json.sh
+│   │   ├── generate-md.sh
+│   │   ├── lib-tracker.sh
 │   │   ├── mirror-clone-push.sh
-│   │   ├── refresh-metadata.sh     [bot: writes metadata only]
-│   │   ├── register-repo.sh        [PR: writes one intent file only]
-│   │   ├── render-readme.sh        [bot: repo-status.json -> README.md]
+│   │   ├── refresh-metadata.sh
+│   │   ├── register-repo.sh
+│   │   ├── render-readme.sh
 │   │   ├── validate-owner.sh
-│   │   └── validate-registry.sh    [validates tracker/* against schemas]
+│   │   └── validate-registry.sh
 │   └── workflows/
 │       ├── bulk-import.yml
 │       ├── lint.yml
 │       ├── new-private-fork.yml
 │       └── sync-status.yml
-├── tracker/                         [all registry data lives here, as JSON]
-│   ├── config.json                  [version + defaults; PR-owned]
-│   ├── registry/                    [INTENT — one file per mirror; PR-owned]
-│   │   └── <owner>__<repo>.json
-│   ├── metadata/                    [OBSERVED state — one file per mirror; bot-owned]
-│   │   └── <owner>__<repo>.json
-│   └── schemas/
-│       ├── config.schema.json
-│       ├── registry-record.schema.json
-│       └── metadata-record.schema.json
+├── .kimchi/
+│   └── ferments/
 ├── docs/
-│   ├── file_tree.md
-│   └── conflict-free-registry.md    [architecture + rationale]
+│   ├── conflict-free-registry.md  [docs]
+│   └── file_tree.md  [docs]
 ├── tests/
 │   ├── fixtures/
-│   │   ├── registry/                [valid-*/bad-* intent records]
-│   │   └── metadata/                [valid-*/bad-* metadata records]
-│   ├── run-schema-tests.sh          [fixture validation]
-│   ├── test-no-conflict.sh          [merge-conflict simulation]
-│   └── run-all.sh                   [full offline suite]
-├── CODEOWNERS                        [repo root]
-├── index.html                       [reads repo-status.json]
+│   │   ├── metadata/
+│   │   │   ├── bad-enum-state.json  [config]
+│   │   │   ├── bad-extra-property.json  [config]
+│   │   │   ├── bad-license-history.json  [config]
+│   │   │   ├── bad-negative-int.json  [config]
+│   │   │   ├── valid-full.json  [config]
+│   │   │   └── valid-minimal.json  [config]
+│   │   └── registry/
+│   │       ├── bad-empty-branch.json  [config]
+│   │       ├── bad-extra-property.json  [config]
+│   │       ├── bad-missing-required.json  [config]
+│   │       ├── bad-pattern-upstream.json  [config]
+│   │       ├── bad-type-paused.json  [config]
+│   │       ├── valid-full.json  [config]
+│   │       └── valid-minimal.json  [config]
+│   ├── golden/
+│   ├── run-all.sh
+│   ├── run-schema-tests.sh
+│   └── test-no-conflict.sh
+├── tracker/
+│   ├── metadata/
+│   │   ├── ionix-ray__carbon-charts.json  [config]
+│   │   ├── ionix-ray__cli.json  [config]
+│   │   ├── ionix-ray__pixie.json  [config]
+│   │   └── ionix-ray__wgpu.json  [config]
+│   ├── registry/
+│   │   ├── ionix-ray__carbon-charts.json  [config]
+│   │   ├── ionix-ray__cli.json  [config]
+│   │   ├── ionix-ray__pixie.json  [config]
+│   │   └── ionix-ray__wgpu.json  [config]
+│   ├── schemas/
+│   │   ├── config.schema.json  [config]
+│   │   ├── metadata-record.schema.json  [config]
+│   │   └── registry-record.schema.json  [config]
+│   └── config.json  [config]
+├── .gitignore
+├── CODEOWNERS
+├── index.html
 ├── LICENSE
-├── README.md                        [generated]
-├── REPO_STATUS.md                   [generated]
-└── repo-status.json                 [generated read-model; bot-owned]
+├── README.md
+├── REPO_STATUS.md
+└── repo-status.json  [config]
 ```
