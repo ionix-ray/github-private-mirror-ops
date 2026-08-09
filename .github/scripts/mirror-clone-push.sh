@@ -3,6 +3,10 @@
 # Reads env: PUBLIC_URL, TARGET_OWNER, BRANCH_INPUT, PRIVATE_NAME_INPUT, GH_TOKEN
 # Outputs to $GITHUB_OUTPUT: upstream_full, private_full, branch
 #
+# Composes over the shared primitives in lib-gh.sh (git_setup_auth,
+# parse_github_url, git_clone_upstream, create_private_repo, git_push_private,
+# set_default_branch) so create and sync use the SAME code path.
+#
 # Idempotent: if private repo already exists, aborts with clear error (no overwrite).
 # Cleans up the empty private repo if the push step fails.
 
@@ -16,49 +20,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-gh.sh"
 
-# --- Hardening helpers ---
-# Per-run tempdir; auto-cleanup on exit. Avoids /tmp TOCTOU.
-TMPDIR_RUN="$(mktemp -d -t mirror.XXXXXXXX)"
-trap 'rm -rf "$TMPDIR_RUN"' EXIT
+# --- Hardening helpers (shared, from lib-gh.sh) ---
+git_setup_auth "mirror"
 
-# GIT_ASKPASS shim so the PAT never appears in argv or remote URLs.
-ASKPASS="$TMPDIR_RUN/askpass.sh"
-make_askpass "$ASKPASS"
-export GIT_ASKPASS="$ASKPASS"
-export GIT_TERMINAL_PROMPT=0
+# --- Parse URL into owner/repo (shared helper) ---
+parsed="$(parse_github_url "$PUBLIC_URL")" || exit 1
+up_owner="${parsed%% *}"
+up_repo="${parsed#* }"
+UPSTREAM_FULL="${up_owner}/${up_repo}"
 
-# --- Parse URL into owner/repo ---
-url="${PUBLIC_URL%.git}"
-url="${url%/}"
-case "$url" in
-  https://github.com/*) ;;
-  http://github.com/*)  ;;
-  git@github.com:*)
-    url="https://github.com/${url#git@github.com:}" ;;
-  *)
-    echo "::error::only github.com URLs supported, got: $PUBLIC_URL"
-    exit 1
-    ;;
-esac
-path="${url#https://github.com/}"
-path="${path#http://github.com/}"
-up_owner="${path%%/*}"
-up_repo="${path#*/}"
-up_repo="${up_repo%%/*}"
-
-if [[ -z "$up_owner" || -z "$up_repo" || "$up_owner" == "$up_repo" ]]; then
-  echo "::error::could not parse owner/repo from: $PUBLIC_URL"
-  exit 1
-fi
-if ! is_valid_owner_or_repo "$up_owner" || ! is_valid_owner_or_repo "$up_repo"; then
-  echo "::error::upstream owner/repo contains unsupported characters"
-  exit 1
-fi
 if ! is_valid_owner_or_repo "$TARGET_OWNER"; then
   echo "::error::TARGET_OWNER contains unsupported characters"
   exit 1
 fi
-UPSTREAM_FULL="${up_owner}/${up_repo}"
 
 # --- Fetch upstream metadata (must be public + not archived) ---
 UP_JSON="$TMPDIR_RUN/up.json"
@@ -120,68 +94,23 @@ if [[ "$existing_http" == "200" ]]; then
   exit 1
 fi
 
-# --- Mirror clone ---
+# --- Mirror clone (shared helper) ---
 workdir="$TMPDIR_RUN/work"
-mkdir -p "$workdir"
-cd "$workdir"
+git_clone_upstream "$UPSTREAM_FULL" "$BRANCH" "$workdir"
 
-clone_url="https://github.com/${UPSTREAM_FULL}.git"
-echo "Cloning $clone_url ..."
-if [[ "$BRANCH" == "all" ]]; then
-  git clone --mirror --no-tags "$clone_url" mirror.git
-else
-  # bare clone restricted to single branch
-  git clone --bare --single-branch --branch "$BRANCH" --no-tags "$clone_url" mirror.git
-fi
-cd mirror.git
-
-# --- Create private repo ---
+# --- Create private repo (shared helper) ---
 echo "Creating private repo ${PRIVATE_FULL} ..."
-OWNER_JSON="$TMPDIR_RUN/owner.json"
-ohttp="$(gh_api GET "https://api.github.com/users/${TARGET_OWNER}" "$OWNER_JSON")"
-[[ "$ohttp" == "200" ]] || { echo "::error::target owner lookup failed (HTTP $ohttp)"; exit 1; }
-otype=$(jq -r '.type' "$OWNER_JSON")
-
-desc=$(jq -nc --arg d "Mirror of https://github.com/${UPSTREAM_FULL}" --arg n "$PRIVATE_NAME" \
-  '{name:$n, description:$d, private:true, has_issues:true, has_projects:false, has_wiki:false, auto_init:false}')
-
-if [[ "$otype" == "Organization" ]]; then
-  create_url="https://api.github.com/orgs/${TARGET_OWNER}/repos"
-else
-  create_url="https://api.github.com/user/repos"
-fi
-
-CREATE_JSON="$TMPDIR_RUN/create.json"
-chttp="$(curl -sS -o "$CREATE_JSON" -w '%{http_code}' -X POST \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  -d "$desc" "$create_url")"
-if [[ "$chttp" != "201" ]]; then
-  errmsg="$(jq -r '.message // .' "$CREATE_JSON" 2>/dev/null || true)"
-  echo "::error::create private repo failed (HTTP $chttp): $errmsg"
-  if [[ "$chttp" == "403" ]]; then
-    echo "::error::PAT cannot create a repo under '$TARGET_OWNER'. For a fine-grained PAT grant:"
-    echo "  - Resources: 'All repositories' (or this owner), and"
-    echo "  - Permissions: 'Administration' read/write + 'Contents' read/write"
-    echo "  For a classic PAT, add the 'repo' scope and ensure '$TARGET_OWNER' allows repo creation."
-    echo "  Confirm the PAT in the Actions secret resolved from tracker/owners.json for '$TARGET_OWNER'."
-  fi
+if ! create_private_repo "$TARGET_OWNER" "$PRIVATE_NAME" "$UPSTREAM_FULL"; then
   exit 1
 fi
 
-# --- Push (token via GIT_ASKPASS, never in URL/argv) ---
-push_url="https://github.com/${PRIVATE_FULL}.git"
-echo "Pushing to ${PRIVATE_FULL} ..."
-push_failed=0
+# --- Push (shared helper; token via GIT_ASKPASS, never in URL/argv) ---
 if [[ "$BRANCH" == "all" ]]; then
-  git push --mirror "$push_url" || push_failed=1
+  push_mode="mirror"
 else
-  # push only the single branch we cloned, preserve branch name
-  git push "$push_url" "refs/heads/${BRANCH}:refs/heads/${BRANCH}" || push_failed=1
+  push_mode="branch"
 fi
-
-if (( push_failed )); then
+if ! git_push_private "$PRIVATE_FULL" "$BRANCH" "$push_mode"; then
   echo "::error::push failed — rolling back created private repo"
   rb_http="$(gh_api DELETE "https://api.github.com/repos/${PRIVATE_FULL}" /dev/null)"
   if [[ "$rb_http" != "204" ]]; then
@@ -193,15 +122,7 @@ fi
 # --- Set default branch on private to match ---
 db="$BRANCH"
 [[ "$BRANCH" == "all" ]] && db="$default_branch"
-patch_http="$(curl -sS -o /dev/null -w '%{http_code}' -X PATCH \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  -d "$(jq -nc --arg b "$db" '{default_branch:$b}')" \
-  "https://api.github.com/repos/${PRIVATE_FULL}")"
-if [[ "$patch_http" != "200" ]]; then
-  echo "::warning::failed to set default_branch on $PRIVATE_FULL (HTTP $patch_http) — verify manually"
-fi
+set_default_branch "$PRIVATE_FULL" "$db" || true
 
 # --- Outputs ---
 {

@@ -34,8 +34,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-gh.sh"
 
-is_valid_branch(){ [[ "$1" =~ ^[A-Za-z0-9._/-]{1,200}$ && "$1" != *".."* && "$1" != /* && "$1" != */ ]] || [[ "$1" == "all" ]]; }
-
 is_full_repo  "$UPSTREAM_FULL"  || { echo "::error::UPSTREAM_FULL invalid"; exit 1; }
 is_full_repo  "$PRIVATE_FULL"   || { echo "::error::PRIVATE_FULL invalid"; exit 1; }
 is_valid_branch "$BRANCH"       || { echo "::error::BRANCH invalid: $BRANCH"; exit 1; }
@@ -45,16 +43,9 @@ key="$(tracker_key "$PRIVATE_FULL")"
 mf="$META_DIR/$key.json"
 now_iso="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-TMPDIR_RUN="$(mktemp -d -t sync.XXXXXXXX)"
-trap 'rm -rf "$TMPDIR_RUN"' EXIT
-chmod 0700 "$TMPDIR_RUN"
-ASKPASS="$TMPDIR_RUN/askpass.sh"
-make_askpass "$ASKPASS"
-export GIT_ASKPASS="$ASKPASS"
-export GIT_TERMINAL_PROMPT=0
+# Shared hardening helpers (same code path as mirror-clone-push.sh).
+git_setup_auth "sync"
 
-UP_URL="https://github.com/${UPSTREAM_FULL}.git"
-PR_URL="https://github.com/${PRIVATE_FULL}.git"
 UP_SHA=""
 PR_SHA=""
 
@@ -68,18 +59,14 @@ write_status() { # status sha
 
 log(){ echo "[$UPSTREAM_FULL -> $PRIVATE_FULL] $*"; }
 
-# --- Resolve SHAs ---
-if UP_SHA=$(git ls-remote "$UP_URL" "refs/heads/$BRANCH" 2>/dev/null | awk '{print $1}'); then
-  :
-else
+# --- Resolve SHAs (shared ls-remote helper) ---
+if ! UP_SHA="$(git_resolve_remote_sha "$UPSTREAM_FULL" "$BRANCH")"; then
   log "FAIL could not resolve upstream refs/heads/$BRANCH"
   write_status "failed" ""; exit 0
 fi
 [[ -n "$UP_SHA" ]] || { log "upstream branch $BRANCH not found"; write_status "failed" ""; exit 0; }
 
-if PR_SHA=$(git ls-remote "$PR_URL" "refs/heads/$BRANCH" 2>/dev/null | awk '{print $1}'); then
-  :
-else
+if ! PR_SHA="$(git_resolve_remote_sha "$PRIVATE_FULL" "$BRANCH")"; then
   log "FAIL could not resolve private refs/heads/$BRANCH (not created yet?)"
   write_status "skipped" ""; exit 0
 fi
@@ -92,34 +79,18 @@ if [[ "$UP_SHA" == "$PR_SHA" ]]; then
   write_status "ok" "$PR_SHA"; exit 0
 fi
 
-# --- Check divergence with a depth-bounded fetch ---
-UP_CLONE="$TMPDIR_RUN/up"
-PR_CLONE="$TMPDIR_RUN/pr"
-git clone --quiet --filter=blob:none --no-checkout "$UP_URL" "$UP_CLONE" 2>/dev/null || true
-git clone --quiet --filter=blob:none --no-checkout "$PR_URL" "$PR_CLONE" 2>/dev/null || true
+# --- Check divergence with a depth-bounded fetch (shared ancestry helper) ---
+# If either clone failed, it reports "unknown" => conservative treatment (diverged).
+ancestry="$(git_ancestry_check "$UPSTREAM_FULL" "$PRIVATE_FULL" "$UP_SHA" "$PR_SHA" "$TMPDIR_RUN")"
 
-# Fetch the two SHAs and test ancestry. If either clone failed, fall back to
-# conservative treatment: we cannot prove fast-forward => treat as diverged.
-up_behind_private="no"
-private_behind_up="no"
-if [[ -d "$UP_CLONE/.git" && -d "$PR_CLONE/.git" ]]; then
-  git -C "$UP_CLONE" fetch --quiet --depth=1 origin "$UP_SHA" 2>/dev/null && \
-    git -C "$PR_CLONE" fetch --quiet --depth=1 origin "$PR_SHA" 2>/dev/null
-  if git -C "$PR_CLONE" merge-base --is-ancestor "$UP_SHA" "$PR_SHA" 2>/dev/null; then
-    private_behind_up="no"; up_behind_private="yes"   # private is ahead of upstream
-  elif git -C "$UP_CLONE" merge-base --is-ancestor "$PR_SHA" "$UP_SHA" 2>/dev/null; then
-    private_behind_up="yes"                            # private is behind upstream -> FF push
-  fi
-fi
-
-if [[ "$up_behind_private" == "yes" ]]; then
+if [[ "$ancestry" == "private_ahead" ]]; then
   log "private is ahead of upstream — nothing to pull"
   write_status "ok" "$PR_SHA"; exit 0
 fi
 
-if [[ "$private_behind_up" == "yes" ]]; then
+if [[ "$ancestry" == "upstream_ahead" ]]; then
   log "fast-forwarding private to upstream $UP_SHA"
-  if git push --force-with-lease "$PR_URL" "refs/heads/$BRANCH:refs/heads/$BRANCH" 2>/dev/null; then
+  if git_push_private "$PRIVATE_FULL" "$BRANCH" ff-only; then
     log "fast-forward pushed"
     write_status "ok" "$UP_SHA"; exit 0
   fi

@@ -27,8 +27,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/lib-gh.sh"
 
 # --- Charset hardening (defense-in-depth; upstream caller already validates) ---
-is_valid_branch(){ [[ "$1" =~ ^[A-Za-z0-9._/-]{1,200}$ && "$1" != *".."* && "$1" != /* && "$1" != */ ]] || [[ "$1" == "all" ]]; }
-
 is_full_repo  "$UPSTREAM_FULL"     || { echo "::error::UPSTREAM_FULL invalid"; exit 1; }
 is_full_repo  "$PRIVATE_FULL"      || { echo "::error::PRIVATE_FULL invalid"; exit 1; }
 is_full_repo  "$GITHUB_REPOSITORY" || { echo "::error::GITHUB_REPOSITORY invalid"; exit 1; }
@@ -75,14 +73,8 @@ if ! [[ "$GIT_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; the
   echo "::error::GIT_AUTHOR_EMAIL not a valid email: $GIT_EMAIL"; exit 1
 fi
 
-TMPDIR_RUN="$(mktemp -d -t register.XXXXXXXX)"
-trap 'rm -rf "$TMPDIR_RUN"' EXIT
-
-# GIT_ASKPASS shim: PAT never in argv/URL.
-ASKPASS="$TMPDIR_RUN/askpass.sh"
-make_askpass "$ASKPASS"
-export GIT_ASKPASS="$ASKPASS"
-export GIT_TERMINAL_PROMPT=0
+# Shared hardening helpers (same code path as create/sync).
+git_setup_auth "register"
 
 # Create the PR branch from the CURRENT base branch (not from any leftover
 # register branch), so sequential bulk-import registrations never stack.
