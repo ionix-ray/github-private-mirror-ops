@@ -1,4 +1,18 @@
 {
+  "created_at": "2026-05-10T08:44:44Z",
+  "description": "belt — the cloud platform cli for ai agents",
+  "forks_count": 0,
+  "has_discussions": false,
+  "has_pages": false,
+  "has_projects": true,
+  "has_wiki": true,
+  "homepage": "",
+  "is_template": false,
+  "language": "Shell",
+  "languages": {
+    "PowerShell": 1967,
+    "Shell": 3284
+  },
   "last_synced_at": "",
   "last_synced_sha": "",
   "last_synced_status": "",
@@ -7,11 +21,19 @@
   "license_current_name": "MIT License",
   "license_current_spdx": "MIT",
   "license_history": [],
+  "network_count": 0,
+  "open_issues_count": 0,
   "private": "ionix-ray/cli",
+  "refreshed_at": "2026-08-09T16:38:06Z",
+  "stargazers_count": 6,
+  "subscribers_count": 0,
+  "topics": [],
+  "updated_at": "2026-07-30T03:15:50Z",
   "upstream": "belt-sh/cli",
   "upstream_archived": false,
-  "upstream_default_branch": "",
-  "upstream_pushed_at": "",
-  "upstream_size_kb": 0,
-  "upstream_state": "active"
+  "upstream_default_branch": "main",
+  "upstream_pushed_at": "2026-07-13T13:45:38Z",
+  "upstream_size_kb": 32,
+  "upstream_state": "active",
+  "watchers_count": 6
 }
