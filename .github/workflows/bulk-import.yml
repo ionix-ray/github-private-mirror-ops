@@ -52,6 +52,7 @@ concurrency:
 jobs:
   resolve-secret:
     runs-on: ubuntu-latest
+    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
     # Maps the chosen target_owner to its per-owner PAT secret name.
     # The secret itself is only consumed by later jobs via the resolved name.
     outputs:
