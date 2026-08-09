@@ -14,6 +14,7 @@ on:
         options:
           - cyfen-code
           - ionix-ray
+          - samirparhi-dev
       branch:
         description: "Branch to mirror. Leave empty for upstream default. 'all' = mirror every branch."
         required: false
@@ -54,6 +55,7 @@ jobs:
         run: |
           set -euo pipefail
           case "$OWNER" in
+            samirparhi-dev) name="GH_SYNC_PAT_SAMIRPARHI_DEV" ;;
             cyfen-code)     name="GH_SYNC_PAT_CYFEN_CODE" ;;
             ionix-ray)      name="GH_SYNC_PAT_IONIX_RAY" ;;
             *) echo "::error::unknown target_owner '$OWNER'"; exit 1 ;;
