@@ -13,13 +13,17 @@
     "Python": 935750,
     "Shell": 14802
   },
+  "last_synced_at": "2026-08-09T16:48:50Z",
+  "last_synced_sha": "",
+  "last_synced_status": "skipped",
+  "last_upstream_sha": "6db963cbe4587a7934fd6c2e007976a1b97ed655",
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
   "network_count": 1118,
   "open_issues_count": 30,
   "private": "ionix-ray/antigravity-sdk-python",
-  "refreshed_at": "2026-08-09T16:38:06Z",
+  "refreshed_at": "2026-08-09T16:48:50Z",
   "stargazers_count": 2914,
   "subscribers_count": 129,
   "topics": [

@@ -31,10 +31,10 @@
     "Thrift": 498,
     "TypeScript": 1753038
   },
-  "last_synced_at": "",
+  "last_synced_at": "2026-08-09T16:48:52Z",
   "last_synced_sha": "",
-  "last_synced_status": "",
-  "last_upstream_sha": "",
+  "last_synced_status": "skipped",
+  "last_upstream_sha": "830ff2ad3d5b6d4ff5a975ac5b21d43d42ce4bef",
   "last_validated_at": "",
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
@@ -42,7 +42,7 @@
   "network_count": 499,
   "open_issues_count": 394,
   "private": "ionix-ray/pixie",
-  "refreshed_at": "2026-08-09T16:38:06Z",
+  "refreshed_at": "2026-08-09T16:48:52Z",
   "stargazers_count": 6508,
   "subscribers_count": 75,
   "topics": [
