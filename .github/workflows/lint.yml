@@ -19,9 +19,11 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Needed to diff against the base branch for the ownership guard.
+          fetch-depth: 0
 
       - name: Install jq
         run: sudo apt-get update -qq && sudo apt-get install -y jq
@@ -65,3 +67,9 @@ jobs:
 
       - name: owner config + dropdown drift
         run: bash tests/test-owners.sh
+
+      - name: ownership guard (PR must not touch bot-owned files)
+        if: github.event_name == 'pull_request'
+        run: |
+          base="${GITHUB_BASE_REF:-main}"
+          git diff --name-only "origin/$base...HEAD" | bash .github/scripts/guard-ownership.sh

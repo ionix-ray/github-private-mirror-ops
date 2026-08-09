@@ -158,15 +158,19 @@ if [[ "$PAUSE_REPO" == "true" ]]; then
   if [[ -f "$regfile" ]] && ! jq -e '.paused == true' "$regfile" >/dev/null 2>&1; then
     base_branch="${BASE_BRANCH:-main}"
     branch_name="pause/${PRIVATE_FULL//\//-}-$(date -u +%Y%m%d%H%M%S)"
+
+    # Remember where we were so the pause PR branch NEVER leaks into the caller's
+    # working tree (the sync-mirrors.yml main push must not ride on a pause/*).
+    orig_ref="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo HEAD)"
     git checkout -b "$branch_name" "origin/$base_branch" 2>/dev/null \
       || git checkout -b "$branch_name" "$base_branch" 2>/dev/null \
       || git checkout -b "$branch_name"
 
-    git config user.email "bot@dpost.me"
-    git config user.name "git-private-repo-manager"
     jq '.paused=true | .pause_reason="diverged from upstream (auto-paused by sync-mirror)"' "$regfile" | write_json_stable "$regfile"
     git add "$regfile"
-    git commit -m "pause: $PRIVATE_FULL diverged from upstream" >/dev/null 2>&1 || { log "nothing to commit for pause"; exit 0; }
+    git -c user.email="bot@dpost.me" -c user.name="git-private-repo-manager" \
+      commit -m "pause: $PRIVATE_FULL diverged from upstream" >/dev/null 2>&1 \
+      || { log "nothing to commit for pause"; git checkout -q "$orig_ref" 2>/dev/null || true; exit 0; }
     git push "https://github.com/${GITHUB_REPOSITORY}.git" "$branch_name" >/dev/null 2>&1
 
     pr_body=$(jq -nc \
@@ -184,6 +188,11 @@ if [[ "$PAUSE_REPO" == "true" ]]; then
     [[ "$http" == "201" ]] \
       && log "auto-pause PR opened: $(jq -r '.html_url' "$pause_json")" \
       || log "auto-pause PR creation failed (HTTP $http)"
+
+    # CRITICAL: return to the original branch so the caller (sync-mirrors.yml
+    # main push) cannot pick up the pause/* registry edit. commit-bot-changes.sh
+    # re-checks out the default branch as a second guard.
+    git checkout -q "$orig_ref" 2>/dev/null || true
   fi
 fi
 

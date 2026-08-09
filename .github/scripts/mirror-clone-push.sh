@@ -158,7 +158,15 @@ chttp="$(curl -sS -o "$CREATE_JSON" -w '%{http_code}' -X POST \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   -d "$desc" "$create_url")"
 if [[ "$chttp" != "201" ]]; then
-  echo "::error::create private repo failed (HTTP $chttp): $(jq -r '.message // .' "$CREATE_JSON")"
+  errmsg="$(jq -r '.message // .' "$CREATE_JSON" 2>/dev/null || true)"
+  echo "::error::create private repo failed (HTTP $chttp): $errmsg"
+  if [[ "$chttp" == "403" ]]; then
+    echo "::error::PAT cannot create a repo under '$TARGET_OWNER'. For a fine-grained PAT grant:"
+    echo "  - Resources: 'All repositories' (or this owner), and"
+    echo "  - Permissions: 'Administration' read/write + 'Contents' read/write"
+    echo "  For a classic PAT, add the 'repo' scope and ensure '$TARGET_OWNER' allows repo creation."
+    echo "  Confirm the PAT in the Actions secret resolved from tracker/owners.json for '$TARGET_OWNER'."
+  fi
   exit 1
 fi
 

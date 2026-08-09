@@ -47,6 +47,38 @@ commit and an open registration PR can never touch the same bytes.
 Because each mirror is its **own file**, registration is a pure *add* of a new
 path — even two simultaneously open registration PRs cannot conflict.
 
+## Production-grade single-writer guarantees
+
+The conflict-free design rests on more than path convention. Three mechanisms
+enforce it mechanically:
+
+1. **One bot writer at a time.** `sync-status` and `sync-mirrors` — the two bots
+   that both touch `tracker/metadata/*` + the read-model — share a **single
+   concurrency group** (`bot-sync`). They can never run concurrently, so the
+   read-modify-write in `refresh-metadata.sh` / `sync-mirror.sh` can never race
+   a second writer. (Two bots *can* still conflict if their commits touch the
+   same file — `tests/test-no-conflict.sh` CASE 4b proves they must — which is
+   exactly why serialization is mandatory, not optional.)
+
+2. **A single, conflict-tolerant commit primitive.** Every bot push goes through
+   `.github/scripts/commit-bot-changes.sh`, which:
+   - checks out the default branch first (so a leftover `pause/*` or `register/*`
+     branch can never leak a registry edit into the main push — closes the
+     pause-branch leak);
+   - stages **only** bot-owned paths, never `tracker/registry/**`;
+   - pushes with a **rebase-and-retry loop**, so an interleaved main write (a
+     registration PR merged mid-run) is rebased onto, never force-pushed over.
+
+3. **Ownership enforced in CI.** `guard-ownership.sh` (wired into `lint.yml`)
+   **fails any PR that edits bot-owned files** (`tracker/metadata/*`,
+   `repo-status.json`, `REPO_STATUS.md`, `README.md`). A human hand-edit of
+   metadata can no longer silently race the bot.
+
+The auto-pause path in `sync-mirror.sh` also honours the invariant: it never
+writes `tracker/registry/*` on main — it opens a **PR** that sets
+`paused: true`, and restores HEAD to the default branch so the edit cannot ride
+the bot's own main push.
+
 ## What is still guaranteed
 
 - **Single source of truth is preserved.** `repo-status.json` joins intent +
@@ -76,5 +108,8 @@ merges:
 - **CASE 1** two concurrent registrations (each adds a new file) → clean.
 - **CASE 2** a registration PR vs a bot metadata refresh on main → clean.
 - **CASE 3** a human pause edit vs a bot metadata refresh → clean.
+- **CASE 4a** a bot push rebased over a registration PR (different namespaces) → clean.
+- **CASE 4b** two bots editing the same metadata file → **must conflict** (proves
+  why the shared `bot-sync` concurrency group is required).
 
 Run the whole offline suite with `bash tests/run-all.sh`.

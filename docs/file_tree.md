@@ -7,8 +7,10 @@ github-private-mirror-ops/
 │   │   ├── bulk-import.sh
 │   │   ├── capture-license.sh
 │   │   ├── cleanup-deleted.sh
+│   │   ├── commit-bot-changes.sh
 │   │   ├── generate-json.sh
 │   │   ├── generate-md.sh
+│   │   ├── guard-ownership.sh
 │   │   ├── lib-gh.sh
 │   │   ├── lib-tracker.sh
 │   │   ├── mirror-clone-push.sh
@@ -52,6 +54,7 @@ github-private-mirror-ops/
 │   ├── run-schema-tests.sh
 │   ├── test-lib-gh.sh
 │   ├── test-no-conflict.sh
+│   ├── test-ownership.sh
 │   └── test-owners.sh
 ├── tracker/
 │   ├── metadata/

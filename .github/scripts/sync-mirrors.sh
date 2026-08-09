@@ -55,6 +55,14 @@ done
 
 echo "sync complete: $synced synced, $skipped skipped, $failed failed"
 
+# Return to the default branch before regenerating the read-model. sync-mirror.sh
+# may have left HEAD on a pause/* PR branch for auto-paused mirrors; the generated
+# files + final commit must ride on the DEFAULT branch, never on a pause branch.
+# commit-bot-changes.sh re-checks out the default branch as a second guard.
+base_branch="${BASE_BRANCH:-main}"
+git checkout -q "$base_branch" 2>/dev/null \
+  || git checkout -q -B "$base_branch" "origin/$base_branch" 2>/dev/null || true
+
 # Regenerate the read-model from the updated metadata.
 bash "$SCRIPT_DIR/generate-json.sh"
 bash "$SCRIPT_DIR/generate-md.sh"

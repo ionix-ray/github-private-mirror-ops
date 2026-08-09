@@ -30,8 +30,11 @@ permissions:
   issues: write
 
 concurrency:
-  group: sync-mirrors
-  cancel-in-progress: true
+  # Shared with Sync Status Dashboard: both bots write tracker/metadata + the
+  # generated read-model, so they must never run concurrently. cancel-in-progress
+  # is false so a queued run is NOT killed mid-write; it waits and runs after.
+  group: bot-sync
+  cancel-in-progress: false
 
 env:
   TRACKER_DIR: 'tracker'
@@ -94,22 +97,9 @@ jobs:
         run: bash .github/scripts/sync-mirrors.sh
 
       - name: Commit and push sync results (bot-owned files only)
-        run: |
-          set -euo pipefail
-          git config --global user.email "bot@dpost.me"
-          git config --global user.name "git-private-repo-manager"
-          git add "$TRACKER_DIR/metadata" "$JSON_OUT" "$MD_OUT" "$README_OUT" 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-          git commit -m "chore: auto-sync mirrors [skip ci]" || true
-          default_branch="${DEFAULT_BRANCH:-}"
-          if [[ -z "$default_branch" ]]; then
-            default_branch=$(git symbolic-ref refs/remotes/origin/HEAD --short 2>/dev/null | sed 's#origin/##') \
-              || default_branch="${GITHUB_REF_NAME:-main}"
-          fi
-          git push origin HEAD:"$default_branch"
+        env:
+          COMMIT_MESSAGE: 'chore: auto-sync mirrors [skip ci]'
+        run: bash .github/scripts/commit-bot-changes.sh
 
       - name: Job summary
         if: always()

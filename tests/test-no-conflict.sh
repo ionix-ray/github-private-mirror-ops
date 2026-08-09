@@ -120,6 +120,73 @@ else
   note "FAIL: pause edit conflicted with bot refresh"; fail=1
 fi
 
+echo "== CASE 4: TWO BOT writers race on the SAME metadata+read-model files =="
+# The old design had two bot workflows (sync-status, sync-mirrors) in DIFFERENT
+# concurrency groups pushing the same files; the loser failed and lost changes.
+# The fix is TWO-LAYER:
+#   (a) ONE shared concurrency group serializes the bots -> they cannot overlap.
+#   (b) commit-bot-changes.sh rebase-retry absorbs interleaved main writes that
+#       are NOT in the bot namespace (e.g. a registration PR adding a registry file
+#       while the bot rewrites metadata) -> different files, rebase merges cleanly.
+# This case proves BOTH halves:
+#   4a. rebase of a bot commit over a registration PR (different files) -> clean.
+#   4b. two bots editing the SAME file -> rebase STILL conflicts, proving why the
+#       shared concurrency group (serialization) is mandatory, not optional.
+reset_tree() {  # back to a clean main
+  git merge --abort >/dev/null 2>&1 || true
+  git rebase --abort >/dev/null 2>&1 || true
+  git checkout -q main 2>/dev/null || git checkout -q -b main 2>/dev/null || true
+  git reset -q --hard main >/dev/null 2>&1 || true
+}
+
+echo "  CASE 4a: bot push rebased over a concurrent registration PR (different files -> clean)"
+reset_tree
+base4a=$(git rev-parse HEAD)
+# bot B starts from main, rewrites ONLY metadata (bot namespace)
+git checkout -q -b bot-B "$base4a"
+echo '{"upstream":"a/a","private":"o/a","stargazers_count":1000,"last_synced_status":"ok","last_synced_sha":"abc"}' > tracker/metadata/o__a.json
+git add -A && git commit -qm "chore: auto-sync mirrors [skip ci]"
+# registration PR lands on main, adding a NEW registry file (different namespace)
+git checkout -q -b reg-f "$base4a"
+echo '{"upstream":"f/f","private":"o/f","branch":"main","paused":false,"pause_reason":""}' > tracker/registry/o__f.json
+git add -A && git commit -qm "register f"
+reset_tree
+merge_clean reg-f || { note "FAIL: registration merge setup failed"; fail=1; }
+# commit-bot-changes loop: rebase bot-B onto the new main (different files -> clean)
+git checkout -q bot-B
+if git rebase -q main >/dev/null 2>&1; then
+  git checkout -q main
+  if merge_clean bot-B; then
+    note "OK: bot B rebased over registration PR; metadata + registry both present"
+  else
+    note "FAIL: bot B merge after rebase conflicted"; fail=1
+  fi
+else
+  git rebase --abort >/dev/null 2>&1 || true
+  note "FAIL: bot B rebase over registration PR conflicted"; fail=1
+fi
+
+echo "  CASE 4b: two bots editing the SAME metadata file MUST conflict (why we serialize)"
+reset_tree
+base4b=$(git rev-parse HEAD)
+git checkout -q -b bot-A2 "$base4b"
+echo '{"upstream":"a/a","private":"o/a","stargazers_count":1000,"license_current_spdx":"MIT"}' > tracker/metadata/o__a.json
+git add -A && git commit -qm "bot A2 refresh"
+reset_tree
+merge_clean bot-A2 || { note "FAIL: bot A2 setup merge failed"; fail=1; }
+# bot B2 starts from the SAME base as A2 (not from main-after-A2) — the real race
+git checkout -q -b bot-B2 "$base4b"
+echo '{"upstream":"a/a","private":"o/a","stargazers_count":1000,"last_synced_status":"ok","last_synced_sha":"DIFFERENT"}' > tracker/metadata/o__a.json
+git add -A && git commit -qm "bot B2 refresh"
+reset_tree
+if merge_clean bot-B2; then
+  note "UNEXPECTED: two bots merged the same file cleanly (harness cannot detect the race)"
+  fail=1
+else
+  note "OK: same-file bot writes conflict — shared concurrency group (serialization) is mandatory"
+fi
+reset_tree
+
 echo ""
 if (( fail )); then echo "=== no-conflict test: FAIL ==="; exit 1; fi
 echo "=== no-conflict test: PASS ==="; exit 0
