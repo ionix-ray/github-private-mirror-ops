@@ -1,0 +1,7 @@
+{
+  "branch": "main",
+  "pause_reason": "",
+  "paused": false,
+  "private": "ionix-ray/antigravity-sdk-python",
+  "upstream": "google-antigravity/antigravity-sdk-python"
+}
