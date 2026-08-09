@@ -28,13 +28,15 @@ CONFIRMATION_PHRASE="${CONFIRMATION_PHRASE:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-tracker.sh"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-gh.sh"
 
 # Charset hardening
-if ! [[ "$SOURCE_OWNER" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$ ]]; then
+if ! is_valid_owner_or_repo "$SOURCE_OWNER"; then
   echo "::error::SOURCE_OWNER has unsupported characters"
   exit 1
 fi
-if ! [[ "$TARGET_OWNER" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$ ]]; then
+if ! is_valid_owner_or_repo "$TARGET_OWNER"; then
   echo "::error::TARGET_OWNER has unsupported characters"
   exit 1
 fi
@@ -49,7 +51,7 @@ chmod 0700 "$TMPDIR_RUN"
 
 # --- Rate limit sanity check ---
 RATELIMIT_JSON="$TMPDIR_RUN/ratelimit.json"
-rl=$(curl -sS -o "$RATELIMIT_JSON" -w '%{http_code}'   -H "Accept: application/vnd.github+json"   -H "Authorization: Bearer ${GH_TOKEN}"   -H "X-GitHub-Api-Version: 2022-11-28"   "https://api.github.com/rate_limit")
+rl="$(gh_api GET "https://api.github.com/rate_limit" "$RATELIMIT_JSON" || echo 000)"
 if [[ "$rl" == "200" ]]; then
   remaining=$(jq -r '.resources.core.remaining // 0' "$RATELIMIT_JSON")
   # Need at least 3 API calls per repo (list + check exists + create + push + register)
@@ -74,7 +76,7 @@ true > "$all_repos"
 
 discovered=0
 while (( discovered < MAX_REPOS )); do
-  http=$(curl -sS -o "$REPOS_JSON" -w '%{http_code}'     -H "Accept: application/vnd.github+json"     -H "Authorization: Bearer ${GH_TOKEN}"     -H "X-GitHub-Api-Version: 2022-11-28"     "https://api.github.com/users/${SOURCE_OWNER}/repos?type=public&per_page=${per_page}&page=${page}")
+  http="$(gh_api GET "https://api.github.com/users/${SOURCE_OWNER}/repos?type=public&per_page=${per_page}&page=${page}" "$REPOS_JSON" || echo 000)"
 
   if [[ "$http" != "200" ]]; then
     msg=$(jq -r '.message // ""' "$REPOS_JSON" 2>/dev/null || true)
@@ -134,6 +136,10 @@ true > "$failed_repos"
 delete_list="$TMPDIR_RUN/delete_list.txt"
 true > "$delete_list"
 
+# Base branch for registration PRs (register-repo.sh creates PR branches off it).
+BASE_BRANCH="${BASE_BRANCH:-main}"
+export BASE_BRANCH
+
 while IFS= read -r repo; do
   echo ""
   echo "--- mirroring $repo -> $TARGET_OWNER ---"
@@ -179,6 +185,9 @@ while IFS= read -r repo; do
       export BRANCH="$br"
       if bash .github/scripts/register-repo.sh; then
         echo "registered $up_f -> $pr_f"
+        # Return to the clean base branch so the next registration PR is
+        # independent (register-repo.sh left us on its PR branch).
+        git checkout "$BASE_BRANCH" >/dev/null 2>&1 || git checkout -q "$(git rev-parse --short HEAD)"
       else
         echo "::warning::registration failed for $repo"
       fi
@@ -228,7 +237,7 @@ if [[ "$DELETE_ORIGINAL" == "true" && -s "$delete_list" ]]; then
   echo "--- Deleting original public repos ---"
   cat "$delete_list" | while IFS= read -r repo; do
     echo "deleting $repo ..."
-    del_http=$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE       -H "Accept: application/vnd.github+json"       -H "Authorization: Bearer ${GH_TOKEN}"       -H "X-GitHub-Api-Version: 2022-11-28"       "https://api.github.com/repos/${repo}")
+    del_http="$(gh_api DELETE "https://api.github.com/repos/${repo}" /dev/null || echo 000)"
     if [[ "$del_http" == "204" ]]; then
       echo "deleted $repo"
     elif [[ "$del_http" == "403" ]]; then

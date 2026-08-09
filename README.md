@@ -1,6 +1,6 @@
 # github-private-mirror-ops
 
-_Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `2026-07-12T17:53:37Z`._
+_Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `2026-08-09T16:01:09Z`._
 
 ## Summary
 
@@ -34,12 +34,15 @@ _No license changes detected so far._
 
 ## Workflows
 
-- **New Private Fork** — `Actions → New Private Fork` (manual, input-driven). Opens a registration PR that adds one intent file.
+- **New Private Fork** — `Actions → New Private Fork` (manual, input-driven). Pick where the private mirror lands via the **owner dropdown** (config-driven in `tracker/owners.json`); opens a registration PR that adds one intent file.
+- **Bulk Import** — import many repos at once (manual, comma-separated list).
+- **Sync Mirrors** — daily cron (fast-forward only). Pushes upstream changes into each private mirror; divergence opens an issue + auto-pause PR.
 - **Sync Status Dashboard** — auto-runs on PR merge + daily cron. Writes only metadata + generated files.
 
 ## Operating model
 
 - Strategy: **fast-forward only**. Divergence triggers an issue + auto-pause; never force-pushes.
-- Secrets: per-owner classic PATs stored as `GH_SYNC_PAT_<OWNER>`. Never accepted via dispatch inputs.
+- Owners: `tracker/owners.json` maps every dropdown owner to its PAT secret + environment. `tests/test-owners.sh` fails on dropdown/config drift.
+- Secrets: per-owner PATs stored under the names in `tracker/owners.json`. Never accepted via dispatch inputs.
 - Registry: intent files under `tracker/registry/` are the source of truth for what is mirrored. Metadata is a cache of upstream reality, refreshed by the bot.
 - For a rich interactive dashboard, open `index.html` locally (reads `repo-status.json`).

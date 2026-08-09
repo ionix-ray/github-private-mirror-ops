@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "owners": [
+    { "owner": "ionix-ray", "secret": "GH_SYNC_PAT_IONIX_RAY", "environment": "GH_SYNC_PAT_IONIX_RAY" },
+    { "owner": "cyfen-code", "secret": "GH_SYNC_PAT_CYFEN_CODE", "environment": "GH_SYNC_PAT_SAMIRPARHI_DEV" },
+    { "owner": "samirparhi-dev", "secret": "GH_SYNC_PAT_SAMIRPARHI_DEV", "environment": "GH_SYNC_PAT_SAMIRPARHI_DEV" }
+  ]
+}

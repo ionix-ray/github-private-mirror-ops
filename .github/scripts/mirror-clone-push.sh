@@ -12,6 +12,10 @@ set -euo pipefail
 : "${TARGET_OWNER:?}"
 : "${GH_TOKEN:?}"
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-gh.sh"
+
 # --- Hardening helpers ---
 # Per-run tempdir; auto-cleanup on exit. Avoids /tmp TOCTOU.
 TMPDIR_RUN="$(mktemp -d -t mirror.XXXXXXXX)"
@@ -19,21 +23,9 @@ trap 'rm -rf "$TMPDIR_RUN"' EXIT
 
 # GIT_ASKPASS shim so the PAT never appears in argv or remote URLs.
 ASKPASS="$TMPDIR_RUN/askpass.sh"
-cat >"$ASKPASS" <<'EOS'
-#!/usr/bin/env bash
-case "$1" in
-  Username*) echo "x-access-token" ;;
-  Password*) echo "${GH_TOKEN:-}" ;;
-esac
-EOS
-chmod 0700 "$ASKPASS"
+make_askpass "$ASKPASS"
 export GIT_ASKPASS="$ASKPASS"
 export GIT_TERMINAL_PROMPT=0
-
-# Strict charset validation
-is_valid_owner_or_repo() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$ ]]; }
-# Git branch names: allow common chars; disallow URL-meta and path tricks.
-is_valid_branch() { [[ "$1" =~ ^[A-Za-z0-9._/-]{1,200}$ && "$1" != *".."* && "$1" != /* && "$1" != */ ]]; }
 
 # --- Parse URL into owner/repo ---
 url="${PUBLIC_URL%.git}"
@@ -70,11 +62,7 @@ UPSTREAM_FULL="${up_owner}/${up_repo}"
 
 # --- Fetch upstream metadata (must be public + not archived) ---
 UP_JSON="$TMPDIR_RUN/up.json"
-http=$(curl -sS -o "$UP_JSON" -w '%{http_code}' \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/repos/${UPSTREAM_FULL}")
+http="$(gh_api GET "https://api.github.com/repos/${UPSTREAM_FULL}" "$UP_JSON")"
 if [[ "$http" != "200" ]]; then
   echo "::error::upstream '$UPSTREAM_FULL' not reachable (HTTP $http)"
   exit 1
@@ -108,11 +96,7 @@ else
     exit 1
   fi
   # confirm branch exists on upstream
-  bhttp=$(curl -sS -o /dev/null -w '%{http_code}' \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/${UPSTREAM_FULL}/branches/${BRANCH_INPUT}")
+  bhttp="$(gh_api GET "https://api.github.com/repos/${UPSTREAM_FULL}/branches/${BRANCH_INPUT}" /dev/null)"
   if [[ "$bhttp" != "200" ]]; then
     echo "::error::branch '$BRANCH_INPUT' not found on $UPSTREAM_FULL (HTTP $bhttp)"
     exit 1
@@ -130,11 +114,7 @@ fi
 PRIVATE_FULL="${TARGET_OWNER}/${PRIVATE_NAME}"
 
 # --- Idempotency: refuse to overwrite an existing repo ---
-existing_http=$(curl -sS -o /dev/null -w '%{http_code}' \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/repos/${PRIVATE_FULL}")
+existing_http="$(gh_api GET "https://api.github.com/repos/${PRIVATE_FULL}" /dev/null)"
 if [[ "$existing_http" == "200" ]]; then
   echo "::error::private repo '$PRIVATE_FULL' already exists — refusing to overwrite. Pick a different private_name or delete it first."
   exit 1
@@ -158,11 +138,7 @@ cd mirror.git
 # --- Create private repo ---
 echo "Creating private repo ${PRIVATE_FULL} ..."
 OWNER_JSON="$TMPDIR_RUN/owner.json"
-ohttp=$(curl -sS -o "$OWNER_JSON" -w '%{http_code}' \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/users/${TARGET_OWNER}")
+ohttp="$(gh_api GET "https://api.github.com/users/${TARGET_OWNER}" "$OWNER_JSON")"
 [[ "$ohttp" == "200" ]] || { echo "::error::target owner lookup failed (HTTP $ohttp)"; exit 1; }
 otype=$(jq -r '.type' "$OWNER_JSON")
 
@@ -176,11 +152,11 @@ else
 fi
 
 CREATE_JSON="$TMPDIR_RUN/create.json"
-chttp=$(curl -sS -o "$CREATE_JSON" -w '%{http_code}' -X POST \
+chttp="$(curl -sS -o "$CREATE_JSON" -w '%{http_code}' -X POST \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GH_TOKEN}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
-  -d "$desc" "$create_url")
+  -d "$desc" "$create_url")"
 if [[ "$chttp" != "201" ]]; then
   echo "::error::create private repo failed (HTTP $chttp): $(jq -r '.message // .' "$CREATE_JSON")"
   exit 1
@@ -199,11 +175,7 @@ fi
 
 if (( push_failed )); then
   echo "::error::push failed — rolling back created private repo"
-  rb_http=$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/${PRIVATE_FULL}")
+  rb_http="$(gh_api DELETE "https://api.github.com/repos/${PRIVATE_FULL}" /dev/null)"
   if [[ "$rb_http" != "204" ]]; then
     echo "::warning::rollback DELETE returned HTTP $rb_http — orphan repo may remain at $PRIVATE_FULL"
   fi
@@ -213,12 +185,12 @@ fi
 # --- Set default branch on private to match ---
 db="$BRANCH"
 [[ "$BRANCH" == "all" ]] && db="$default_branch"
-patch_http=$(curl -sS -o /dev/null -w '%{http_code}' -X PATCH \
+patch_http="$(curl -sS -o /dev/null -w '%{http_code}' -X PATCH \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GH_TOKEN}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   -d "$(jq -nc --arg b "$db" '{default_branch:$b}')" \
-  "https://api.github.com/repos/${PRIVATE_FULL}")
+  "https://api.github.com/repos/${PRIVATE_FULL}")"
 if [[ "$patch_http" != "200" ]]; then
   echo "::warning::failed to set default_branch on $PRIVATE_FULL (HTTP $patch_http) — verify manually"
 fi

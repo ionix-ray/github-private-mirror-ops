@@ -7,17 +7,18 @@ set -euo pipefail
 
 OWNER="${1:?owner required}"
 
-if [[ -z "${GH_TOKEN:-}" ]]; then
-  echo "::error::GH_TOKEN env not set"
-  exit 1
-fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-gh.sh"
 
-if ! [[ "$OWNER" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$ ]]; then
+is_valid_owner_or_repo "$OWNER" || {
   echo "::error::owner '$OWNER' has unsupported characters"
   exit 1
-fi
+}
 
-TMPDIR_RUN="$(0)"
+mask_token || exit 1
+
+TMPDIR_RUN="$(mktemp -d -t validate.XXXXXXXX)"
 chmod 0700 "$TMPDIR_RUN"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 OWNER_JSON="$TMPDIR_RUN/owner.json"
@@ -26,11 +27,7 @@ MEM_JSON="$TMPDIR_RUN/mem.json"
 HDR_FILE="$TMPDIR_RUN/headers.txt"
 
 # Determine if user or org
-http=$(curl -sS -o "$OWNER_JSON" -w '%{http_code}' \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/users/${OWNER}")
+http="$(gh_api GET "https://api.github.com/users/${OWNER}" "$OWNER_JSON")"
 
 if [[ "$http" != "200" ]]; then
   echo "::error::owner '$OWNER' not found (HTTP $http)"
@@ -39,11 +36,7 @@ fi
 kind=$(jq -r '.type' "$OWNER_JSON")
 
 # Check the PAT identity actually has rights
-who_http=$(curl -sS -o "$ME_JSON" -w '%{http_code}' \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/user")
+who_http="$(gh_api GET "https://api.github.com/user" "$ME_JSON")"
 if [[ "$who_http" != "200" ]]; then
   echo "::error::PAT auth failed (HTTP $who_http)"
   exit 1
@@ -57,11 +50,7 @@ if [[ "$kind" == "User" ]]; then
   fi
 elif [[ "$kind" == "Organization" ]]; then
   # Org membership check (state must be 'active')
-  mem_http=$(curl -sS -o "$MEM_JSON" -w '%{http_code}' \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/orgs/${OWNER}/memberships/${me}")
+  mem_http="$(gh_api GET "https://api.github.com/orgs/${OWNER}/memberships/${me}" "$MEM_JSON")"
   if [[ "$mem_http" != "200" ]]; then
     echo "::error::PAT user '$me' is not a member of org '$OWNER' (HTTP $mem_http)"
     exit 1
@@ -79,17 +68,10 @@ else
 fi
 
 # Detect token style — fine-grained PATs / App tokens don't expose classic scopes.
-# Classic PAT prefixes: ghp_ (user), gho_ (oauth). Fine-grained: github_pat_. App: ghs_.
-case "$GH_TOKEN" in
-  ghp_*|gho_*) token_kind="classic" ;;
-  github_pat_*) token_kind="fine-grained" ;;
-  ghs_*)        token_kind="app-installation" ;;
-  ghu_*)        token_kind="user-to-server" ;;
-  *)            token_kind="unknown" ;;
-esac
-echo "PAT kind: $token_kind"
+token_kind_="$(token_kind)"
+echo "PAT kind: $token_kind_"
 
-if [[ "$token_kind" == "classic" ]]; then
+if [[ "$token_kind_" == "classic" ]]; then
   # Confirm required scopes are present on the token.
   # Use -D to dump headers to a file (avoids -I which can be silently dropped by some proxies).
   curl -sS -D "$HDR_FILE" -o /dev/null \
@@ -112,15 +94,11 @@ if [[ "$token_kind" == "classic" ]]; then
 else
   # Fine-grained PATs / App tokens don't enumerate classic scopes.
   # Probe required permissions functionally instead.
-  echo "::notice::token kind '$token_kind' — skipping classic scope header check; probing permissions instead"
+  echo "::notice::token kind '$token_kind_' — skipping classic scope header check; probing permissions instead"
 
   # Probe 1: token must be able to read its own user record (already done above).
   # Probe 2: token must be able to list private repos (requires repo:read or contents:read).
-  probe_http=$(curl -sS -o /dev/null -w '%{http_code}' \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/user/repos?per_page=1&visibility=all")
+  probe_http="$(gh_api GET "https://api.github.com/user/repos?per_page=1&visibility=all" /dev/null)"
   if [[ "$probe_http" != "200" ]]; then
     echo "::error::token cannot list user repos (HTTP $probe_http) — needs repo:read / contents:read + administration:write equivalent for create"
     exit 1

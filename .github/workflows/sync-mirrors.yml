@@ -1,32 +1,36 @@
-name: Sync Status Dashboard
+name: Sync Mirrors
 
 on:
-  pull_request:
-    types: [closed]
-    branches: [main]
-    paths:
-      - 'tracker/registry/**'
+  schedule:
+    - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
-      full_refresh:
-        description: 'Force full metadata refresh for all repos'
+      target_owner:
+        description: 'Owner whose mirrors to sync (dropdown)'
         required: false
-        type: boolean
-        default: false
-      cleanup_deleted:
-        description: 'Mark entries for deleted upstream/private repos'
+        type: choice
+        options:
+          - cyfen-code
+          - ionix-ray
+          - samirparhi-dev
+      pause_repo:
+        description: 'Open auto-pause PR when a mirror diverges'
         required: false
         type: boolean
         default: true
-  schedule:
-    - cron: '0 7 * * *'
+      open_issue:
+        description: 'Open a GitHub issue when a mirror diverges'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
-  pull-requests: read
+  pull-requests: write
+  issues: write
 
 concurrency:
-  group: sync-status
+  group: sync-mirrors
   cancel-in-progress: true
 
 env:
@@ -34,14 +38,14 @@ env:
   JSON_OUT: 'repo-status.json'
   MD_OUT: 'REPO_STATUS.md'
   README_OUT: 'README.md'
-  # Owner whose repos this dashboard syncs. Override per-repo via the
-  # SYNC_OWNER Actions variable; defaults to the repo owner.
-  SYNC_OWNER: ${{ vars.SYNC_OWNER || 'ionix-ray' }}
+  # Owner whose private mirrors live under. On schedule defaults to ionix-ray;
+  # on manual dispatch the dropdown selects it. The owner is resolved to its
+  # PAT secret + environment via tracker/owners.json (config-driven).
+  TARGET_OWNER: ${{ inputs.target_owner || 'ionix-ray' }}
 
 jobs:
   resolve-secret:
     runs-on: ubuntu-latest
-    # Config-driven: resolves SYNC_OWNER -> PAT secret name + environment.
     outputs:
       secret_name: ${{ steps.pick.outputs.secret_name }}
       environment: ${{ steps.pick.outputs.environment }}
@@ -50,22 +54,23 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - id: pick
         env:
-          OWNER: ${{ env.SYNC_OWNER }}
+          OWNER: ${{ env.TARGET_OWNER }}
         run: bash .github/scripts/resolve-owner.sh "$OWNER"
 
-  update:
+  sync:
     needs: [resolve-secret]
     runs-on: ubuntu-latest
     environment: ${{ needs.resolve-secret.outputs.environment }}
     env:
       GH_TOKEN: ${{ secrets[needs.resolve-secret.outputs.secret_name] }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
     steps:
       - name: Checkout ops repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           # Default GITHUB_TOKEN (contents: write) is enough for checkout +
-          # commit+push of the ops repo. The PAT is reserved for API calls
-          # (private mirror metadata) and is validated in the Mask token step.
+          # commit+push of the ops repo. The PAT is reserved for API + git
+          # access to the private mirrors, and is masked below.
           persist-credentials: true
 
       - name: Mask token
@@ -73,51 +78,32 @@ jobs:
           if [ -n "${GH_TOKEN:-}" ]; then echo "::add-mask::$GH_TOKEN"; fi
           test -n "${GH_TOKEN:-}" || { echo "::error::GH_TOKEN is empty"; exit 1; }
 
-      - name: Install jq + jsonschema
+      - name: Install jq
         run: |
           sudo apt-get update -qq && sudo apt-get install -y jq
-          python3 -m pip install --quiet pyyaml jsonschema
           jq --version
 
       - name: Validate registry (offline schema + invariants)
         run: bash .github/scripts/validate-registry.sh
 
-      - name: Cleanup deleted repos (mark metadata)
-        if: ${{ github.event.inputs.cleanup_deleted != 'false' }}
-        run: bash .github/scripts/cleanup-deleted.sh
+      - name: Sync mirrors (fast-forward + divergence auto-pause)
         env:
-          FULL_REFRESH: "${{ github.event.inputs.full_refresh || 'false' }}"
+          TARGET_OWNER: ${{ env.TARGET_OWNER }}
+          PAUSE_REPO: ${{ inputs.pause_repo || 'true' }}
+          OPEN_ISSUE: ${{ inputs.open_issue || 'true' }}
+        run: bash .github/scripts/sync-mirrors.sh
 
-      - name: Refresh metadata
-        run: bash .github/scripts/refresh-metadata.sh
-        env:
-          FULL_REFRESH: "${{ github.event.inputs.full_refresh || 'false' }}"
-
-      - name: Generate JSON read-model
-        run: bash .github/scripts/generate-json.sh
-
-      - name: Generate Markdown status
-        run: bash .github/scripts/generate-md.sh
-
-      - name: Render README
-        run: bash .github/scripts/render-readme.sh
-
-      - name: Commit and push updates (bot-owned files only)
+      - name: Commit and push sync results (bot-owned files only)
         run: |
           set -euo pipefail
           git config --global user.email "bot@dpost.me"
           git config --global user.name "git-private-repo-manager"
-          # Only ever stage bot-owned outputs. tracker/registry/** (intent) is
-          # PR-owned and is deliberately NOT added here, so a metadata commit can
-          # never conflict with an open registration PR.
           git add "$TRACKER_DIR/metadata" "$JSON_OUT" "$MD_OUT" "$README_OUT" 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "chore: auto-sync status dashboard [skip ci]" || true
-          # Resolve default branch robustly (origin/HEAD may be unset on a
-          # single-branch checkout); fall back to the workflow's head ref.
+          git commit -m "chore: auto-sync mirrors [skip ci]" || true
           default_branch="${DEFAULT_BRANCH:-}"
           if [[ -z "$default_branch" ]]; then
             default_branch=$(git symbolic-ref refs/remotes/origin/HEAD --short 2>/dev/null | sed 's#origin/##') \
@@ -129,10 +115,11 @@ jobs:
         if: always()
         run: |
           {
-            echo "## Mirror Status Dashboard Updated"
+            echo "## Mirror Sync Complete"
             echo
             count=$(find "$TRACKER_DIR/registry" -maxdepth 1 -name '*.json' 2>/dev/null | wc -l | tr -d ' ')
-            echo "- Registered repos: $count"
-            echo "- JSON: \`$JSON_OUT\`"
-            echo "- Markdown: \`$MD_OUT\`"
+            diverged=$(jq '[.repos[] | select(.last_synced_status == "diverged")] | length' repo-status.json 2>/dev/null || echo 0)
+            echo "- Mirrors checked: $count"
+            echo "- Diverged: $diverged"
+            echo "- Owner: $TARGET_OWNER"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -43,30 +43,25 @@ concurrency:
 jobs:
   resolve-secret:
     runs-on: ubuntu-latest
-    environment: GH_SYNC_PAT_SAMIRPARHI_DEV
-    # Maps the chosen target_owner to its per-owner PAT secret name.
-    # The secret itself is only consumed by later jobs via the resolved name.
+    # Config-driven: reads tracker/owners.json to resolve the per-owner PAT
+    # secret name + environment. The secret itself is only consumed by later
+    # jobs via the resolved name.
     outputs:
-      secret_name: ${{ steps.pick.outputs.name }}
+      secret_name: ${{ steps.pick.outputs.secret_name }}
+      environment: ${{ steps.pick.outputs.environment }}
     steps:
+      - name: Checkout ops repo (read config)
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - id: pick
         env:
           OWNER: ${{ inputs.target_owner }}
-        run: |
-          set -euo pipefail
-          case "$OWNER" in
-            samirparhi-dev) name="GH_SYNC_PAT_SAMIRPARHI_DEV" ;;
-            cyfen-code)     name="GH_SYNC_PAT_CYFEN_CODE" ;;
-            ionix-ray)      name="GH_SYNC_PAT_IONIX_RAY" ;;
-            *) echo "::error::unknown target_owner '$OWNER'"; exit 1 ;;
-          esac
-          echo "name=$name" >> "$GITHUB_OUTPUT"
+        run: bash .github/scripts/resolve-owner.sh "$OWNER"
 
   mirror:
     needs: resolve-secret
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: ${{ needs.resolve-secret.outputs.secret_name }}
+    environment: ${{ needs.resolve-secret.outputs.environment }}
     env:
       GH_TOKEN: ${{ secrets[needs.resolve-secret.outputs.secret_name] }}
       PUBLIC_URL: ${{ inputs.public_url }}

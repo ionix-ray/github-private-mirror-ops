@@ -9,19 +9,25 @@ github-private-mirror-ops/
 │   │   ├── cleanup-deleted.sh
 │   │   ├── generate-json.sh
 │   │   ├── generate-md.sh
+│   │   ├── lib-gh.sh
 │   │   ├── lib-tracker.sh
 │   │   ├── mirror-clone-push.sh
 │   │   ├── refresh-metadata.sh
 │   │   ├── register-repo.sh
 │   │   ├── render-readme.sh
+│   │   ├── resolve-owner.sh
+│   │   ├── sync-mirror.sh
+│   │   ├── sync-mirrors.sh
 │   │   ├── validate-owner.sh
 │   │   └── validate-registry.sh
 │   └── workflows/
 │       ├── bulk-import.yml
 │       ├── lint.yml
 │       ├── new-private-fork.yml
+│       ├── sync-mirrors.yml
 │       └── sync-status.yml
 ├── docs/
+│   ├── config-driven-owners.md  [docs]
 │   ├── conflict-free-registry.md  [docs]
 │   └── file_tree.md  [docs]
 ├── tests/
@@ -44,7 +50,9 @@ github-private-mirror-ops/
 │   ├── golden/
 │   ├── run-all.sh
 │   ├── run-schema-tests.sh
-│   └── test-no-conflict.sh
+│   ├── test-lib-gh.sh
+│   ├── test-no-conflict.sh
+│   └── test-owners.sh
 ├── tracker/
 │   ├── metadata/
 │   │   ├── ionix-ray__carbon-charts.json  [config]
@@ -53,6 +61,7 @@ github-private-mirror-ops/
 │   │   ├── ionix-ray__pixie.json  [config]
 │   │   ├── ionix-ray__qiskit.json  [config]
 │   │   └── ionix-ray__wgpu.json  [config]
+│   ├── owners.json  [config]
 │   ├── registry/
 │   │   ├── ionix-ray__carbon-charts.json  [config]
 │   │   ├── ionix-ray__cli.json  [config]
@@ -63,6 +72,7 @@ github-private-mirror-ops/
 │   ├── schemas/
 │   │   ├── config.schema.json  [config]
 │   │   ├── metadata-record.schema.json  [config]
+│   │   ├── owners.schema.json  [config]
 │   │   └── registry-record.schema.json  [config]
 │   └── config.json  [config]
 ├── .gitignore

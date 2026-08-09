@@ -23,6 +23,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-tracker.sh"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-gh.sh"
 
 # --- Charset hardening (defense-in-depth; upstream caller already validates) ---
 is_valid_branch(){ [[ "$1" =~ ^[A-Za-z0-9._/-]{1,200}$ && "$1" != *".."* && "$1" != /* && "$1" != */ ]] || [[ "$1" == "all" ]]; }
@@ -78,19 +80,18 @@ trap 'rm -rf "$TMPDIR_RUN"' EXIT
 
 # GIT_ASKPASS shim: PAT never in argv/URL.
 ASKPASS="$TMPDIR_RUN/askpass.sh"
-cat >"$ASKPASS" <<'EOS'
-#!/usr/bin/env bash
-case "$1" in
-  Username*) echo "x-access-token" ;;
-  Password*) echo "${GH_TOKEN:-}" ;;
-esac
-EOS
-chmod 0700 "$ASKPASS"
+make_askpass "$ASKPASS"
 export GIT_ASKPASS="$ASKPASS"
 export GIT_TERMINAL_PROMPT=0
 
+# Create the PR branch from the CURRENT base branch (not from any leftover
+# register branch), so sequential bulk-import registrations never stack.
+base_branch="${BASE_BRANCH:-main}"
 branch_name="register/${PRIVATE_FULL//\//-}-$(date -u +%Y%m%d%H%M%S)"
-git checkout -b "$branch_name"
+git checkout -b "$branch_name" "origin/$base_branch" 2>/dev/null \
+  || git checkout -b "$branch_name" "$base_branch" 2>/dev/null \
+  || git checkout -b "$branch_name"
+
 git add "$dest"
 git \
   -c "user.email=$GIT_EMAIL" \
@@ -118,12 +119,12 @@ pr_body=$(jq -nc --arg t "register: $UPSTREAM_FULL" --arg h "$branch_name" --arg
   '{title:$t, head:$h, base:"main", body:$b}')
 
 PR_JSON="$TMPDIR_RUN/pr.json"
-pr_http=$(curl -sS -X POST -o "$PR_JSON" -w '%{http_code}' \
+pr_http="$(curl -sS -X POST -o "$PR_JSON" -w '%{http_code}' \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GH_TOKEN}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   -d "$pr_body" \
-  "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls")
+  "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls")"
 if [[ "$pr_http" != "201" ]]; then
   echo "::warning::PR creation returned HTTP $pr_http: $(jq -r '.message // .' "$PR_JSON" 2>/dev/null || true)"
 fi

@@ -25,6 +25,8 @@ bash .github/scripts/render-readme.sh || rc=1
 python3 -c "import json; d=json.load(open('repo-status.json')); assert d['summary']['total_repos']==len(d['repos']); print('read-model OK:', d['summary']['total_repos'], 'repo(s)')" || rc=1
 
 run "4. merge-conflict simulation" tests/test-no-conflict.sh
+run "5. lib-gh helpers" tests/test-lib-gh.sh
+run "6. owner config + dropdown drift" tests/test-owners.sh
 
 echo ""
 if (( rc )); then echo "==== SUITE: FAIL ===="; else echo "==== SUITE: PASS ===="; fi

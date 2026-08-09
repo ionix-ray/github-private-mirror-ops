@@ -59,3 +59,9 @@ jobs:
 
       - name: schema fixtures
         run: bash tests/run-schema-tests.sh
+
+      - name: lib-gh helpers
+        run: bash tests/test-lib-gh.sh
+
+      - name: owner config + dropdown drift
+        run: bash tests/test-owners.sh
