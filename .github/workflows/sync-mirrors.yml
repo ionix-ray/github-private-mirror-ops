@@ -71,10 +71,12 @@ jobs:
       - name: Checkout ops repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
-          # Default GITHUB_TOKEN (contents: write) is enough for checkout +
-          # commit+push of the ops repo. The PAT is reserved for API + git
-          # access to the private mirrors, and is masked below.
-          persist-credentials: true
+          # persist-credentials:false so NO GITHUB_TOKEN extraheader is written.
+          # That extraheader shadows GIT_ASKPASS for every github.com git URL and
+          # breaks git ls-remote/push on the PRIVATE mirrors. The PAT is injected
+          # by the scripts via GIT_ASKPASS (git_setup_auth) and masks in the step
+          # below; commit-bot-changes.sh uses the same shim for the ops-repo push.
+          persist-credentials: false
 
       - name: Mask token
         run: |

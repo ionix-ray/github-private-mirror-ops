@@ -21,10 +21,18 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-tracker.sh"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-gh.sh"
 
 COMMIT_MESSAGE="${COMMIT_MESSAGE:-chore: auto-sync [skip ci]}"
 default_branch="${DEFAULT_BRANCH:-main}"
 attempts="${PUSH_ATTEMPTS:-4}"
+
+# Auth for the ops-repo push: the workflows checkout with persist-credentials:false
+# (so no GITHUB_TOKEN extraheader shadows the PAT for git operations on the PRIVATE
+# mirrors in sync-mirror.sh). That means the ops-repo push must authenticate via the
+# same shared GIT_ASKPASS shim (GH_TOKEN = the per-owner PAT, which can write here too).
+git_setup_auth "commit"
 
 git config user.email "${GIT_AUTHOR_EMAIL:-bot@dpost.me}"
 git config user.name  "${GIT_AUTHOR_NAME:-git-private-repo-manager}"
