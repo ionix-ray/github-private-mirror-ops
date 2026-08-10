@@ -1,11 +1,11 @@
 # github-private-mirror-ops
 
-_Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `2026-08-09T16:48:55Z`._
+_Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `2026-08-10T07:49:31Z`._
 
 ## Summary
 
 - Mirrors registered: **7**
-- Status: healthy **7** · paused **0** · diverged **0** · failed **0** · archived **0**
+- Status: healthy **2** · paused **0** · diverged **5** · failed **0** · archived **0**
 - Total upstream stars: **35,916** · forks: **6,232**
 - Daily sync: `0 6 * * *` UTC
 - Strategy: `fast-forward`
@@ -14,13 +14,13 @@ _Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `202
 
 | Upstream | Private | Branch | Stars | Forks | Lang | Last Push | Status | License | Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| [Falcon-Forge/PiRanha](https://github.com/Falcon-Forge/PiRanha) | [ionix-ray/PiRanha](https://github.com/ionix-ray/PiRanha) | `main` | 4 | 10 | - | 2026-06-20 | skipped | MIT |  |
-| [google-antigravity/antigravity-sdk-python](https://github.com/google-antigravity/antigravity-sdk-python) | [ionix-ray/antigravity-sdk-python](https://github.com/ionix-ray/antigravity-sdk-python) | `main` | 2,914 | 1,118 | Python | 2026-08-05 | skipped | Apache-2.0 |  |
-| [carbon-design-system/carbon-charts](https://github.com/carbon-design-system/carbon-charts) | [ionix-ray/carbon-charts](https://github.com/ionix-ray/carbon-charts) | `main` | 1,045 | 217 | HTML | 2026-07-31 | skipped | Apache-2.0 |  |
-| [belt-sh/cli](https://github.com/belt-sh/cli) | [ionix-ray/cli](https://github.com/ionix-ray/cli) | `main` | 6 | 0 | Shell | 2026-07-13 | skipped | MIT |  |
-| [pixie-io/pixie](https://github.com/pixie-io/pixie) | [ionix-ray/pixie](https://github.com/ionix-ray/pixie) | `main` | 6,508 | 499 | C++ | 2026-07-30 | skipped | Apache-2.0 |  |
-| [Qiskit/qiskit](https://github.com/Qiskit/qiskit) | [ionix-ray/qiskit](https://github.com/ionix-ray/qiskit) | `main` | 7,687 | 3,003 | Python | 2026-08-09 | skipped | Apache-2.0 |  |
-| [gfx-rs/wgpu](https://github.com/gfx-rs/wgpu) | [ionix-ray/wgpu](https://github.com/ionix-ray/wgpu) | `trunk` | 17,752 | 1,385 | Rust | 2026-08-08 | skipped | Apache-2.0 |  |
+| [Falcon-Forge/PiRanha](https://github.com/Falcon-Forge/PiRanha) | [ionix-ray/PiRanha](https://github.com/ionix-ray/PiRanha) | `main` | 4 | 10 | - | 2026-06-20 | ok | MIT |  |
+| [google-antigravity/antigravity-sdk-python](https://github.com/google-antigravity/antigravity-sdk-python) | [ionix-ray/antigravity-sdk-python](https://github.com/ionix-ray/antigravity-sdk-python) | `main` | 2,914 | 1,118 | Python | 2026-08-05 | ok | Apache-2.0 |  |
+| [carbon-design-system/carbon-charts](https://github.com/carbon-design-system/carbon-charts) | [ionix-ray/carbon-charts](https://github.com/ionix-ray/carbon-charts) | `main` | 1,045 | 217 | HTML | 2026-07-31 | diverged | Apache-2.0 |  |
+| [belt-sh/cli](https://github.com/belt-sh/cli) | [ionix-ray/cli](https://github.com/ionix-ray/cli) | `main` | 6 | 0 | Shell | 2026-07-13 | diverged | MIT |  |
+| [pixie-io/pixie](https://github.com/pixie-io/pixie) | [ionix-ray/pixie](https://github.com/ionix-ray/pixie) | `main` | 6,508 | 499 | C++ | 2026-07-30 | diverged | Apache-2.0 |  |
+| [Qiskit/qiskit](https://github.com/Qiskit/qiskit) | [ionix-ray/qiskit](https://github.com/ionix-ray/qiskit) | `main` | 7,687 | 3,003 | Python | 2026-08-09 | diverged | Apache-2.0 |  |
+| [gfx-rs/wgpu](https://github.com/gfx-rs/wgpu) | [ionix-ray/wgpu](https://github.com/ionix-ray/wgpu) | `trunk` | 17,752 | 1,385 | Rust | 2026-08-08 | diverged | Apache-2.0 |  |
 
 ## License Change Log
 
