@@ -1,1 +1,7 @@
-{"branch":"main","pause_reason":"","paused":false,"private":"ionix-ray/qiskit","upstream":"Qiskit/qiskit"}
+{
+  "branch": "main",
+  "pause_reason": "diverged from upstream (auto-paused by sync-mirror)",
+  "paused": true,
+  "private": "ionix-ray/qiskit",
+  "upstream": "Qiskit/qiskit"
+}
