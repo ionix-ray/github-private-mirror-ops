@@ -1,7 +1,7 @@
 {
   "created_at": "2018-09-13T19:18:50Z",
   "description": "A cross-platform, safe, pure-Rust graphics API.",
-  "forks_count": 1385,
+  "forks_count": 1401,
   "has_discussions": true,
   "has_pages": false,
   "has_projects": true,
@@ -16,7 +16,7 @@
     "JavaScript": 31089,
     "Metal": 448214,
     "RenderScript": 2,
-    "Rust": 12409196,
+    "Rust": 12396252,
     "Shell": 1010,
     "Slang": 2422,
     "WGSL": 2195682
@@ -29,11 +29,11 @@
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
-  "network_count": 1385,
-  "open_issues_count": 1233,
+  "network_count": 1401,
+  "open_issues_count": 1244,
   "private": "ionix-ray/wgpu",
-  "refreshed_at": "2026-08-18T06:50:53Z",
-  "stargazers_count": 17752,
+  "refreshed_at": "2026-08-19T12:52:03Z",
+  "stargazers_count": 17822,
   "subscribers_count": 112,
   "topics": [
     "d3d12",
@@ -45,12 +45,12 @@
     "vulkan",
     "webgpu"
   ],
-  "updated_at": "2026-08-09T11:17:45Z",
+  "updated_at": "2026-08-19T12:28:31Z",
   "upstream": "gfx-rs/wgpu",
   "upstream_archived": false,
   "upstream_default_branch": "trunk",
-  "upstream_pushed_at": "2026-08-08T00:07:48Z",
-  "upstream_size_kb": 83352,
+  "upstream_pushed_at": "2026-08-19T12:26:55Z",
+  "upstream_size_kb": 84020,
   "upstream_state": "active",
-  "watchers_count": 17752
+  "watchers_count": 17822
 }

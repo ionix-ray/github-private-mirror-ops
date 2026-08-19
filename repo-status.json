@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-18T07:28:08.919367+00:00",
+  "generated_at": "2026-08-19T12:52:07.619106+00:00",
   "version": 1,
   "defaults": {
     "schedule": "0 6 * * *",
@@ -7,9 +7,9 @@
   },
   "summary": {
     "total_repos": 7,
-    "total_stars": 35916,
-    "total_forks": 6232,
-    "total_open_issues": 3069,
+    "total_stars": 36196,
+    "total_forks": 6360,
+    "total_open_issues": 3094,
     "archived_count": 0,
     "deleted_count": 0,
     "paused_count": 0,
@@ -43,32 +43,32 @@
       "network_count": 10,
       "open_issues_count": 0,
       "private": "ionix-ray/PiRanha",
-      "refreshed_at": "2026-08-18T06:50:17Z",
-      "stargazers_count": 4,
+      "refreshed_at": "2026-08-19T12:52:03Z",
+      "stargazers_count": 5,
       "subscribers_count": 0,
       "topics": [],
-      "updated_at": "2026-06-22T13:12:08Z",
+      "updated_at": "2026-08-18T09:22:06Z",
       "upstream": "Falcon-Forge/PiRanha",
       "upstream_archived": false,
       "upstream_default_branch": "main",
       "upstream_pushed_at": "2026-06-20T23:53:54Z",
       "upstream_size_kb": 782,
       "upstream_state": "active",
-      "watchers_count": 4,
+      "watchers_count": 5,
       "branch": "main",
       "pause_reason": "",
       "paused": false,
       "_computed": {
         "health_score": 22,
         "opportunity_flag": "",
-        "days_since_push": 58,
-        "generated_at": "2026-08-18T07:28:08.919367+00:00"
+        "days_since_push": 59,
+        "generated_at": "2026-08-19T12:52:07.619106+00:00"
       }
     },
     {
       "created_at": "2026-04-29T21:12:19Z",
       "description": "A Python library for building AI agents that leverage the full power of Google Antigravity.",
-      "forks_count": 1118,
+      "forks_count": 1218,
       "has_discussions": true,
       "has_pages": false,
       "has_projects": true,
@@ -77,7 +77,7 @@
       "is_template": false,
       "language": "Python",
       "languages": {
-        "Python": 935750,
+        "Python": 965260,
         "Shell": 14802
       },
       "last_synced_at": "2026-08-18T06:50:18Z",
@@ -87,12 +87,12 @@
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
-      "network_count": 1118,
-      "open_issues_count": 30,
+      "network_count": 1218,
+      "open_issues_count": 35,
       "private": "ionix-ray/antigravity-sdk-python",
-      "refreshed_at": "2026-08-18T06:50:18Z",
-      "stargazers_count": 2914,
-      "subscribers_count": 129,
+      "refreshed_at": "2026-08-19T12:52:03Z",
+      "stargazers_count": 3087,
+      "subscribers_count": 139,
       "topics": [
         "ai-agents",
         "antigravity",
@@ -104,28 +104,28 @@
         "python-sdk",
         "skills"
       ],
-      "updated_at": "2026-08-09T16:35:57Z",
+      "updated_at": "2026-08-19T12:48:12Z",
       "upstream": "google-antigravity/antigravity-sdk-python",
       "upstream_archived": false,
       "upstream_default_branch": "main",
-      "upstream_pushed_at": "2026-08-05T18:33:58Z",
-      "upstream_size_kb": 1391,
+      "upstream_pushed_at": "2026-08-13T23:28:07Z",
+      "upstream_size_kb": 1596,
       "upstream_state": "active",
-      "watchers_count": 2914,
+      "watchers_count": 3087,
       "branch": "main",
       "pause_reason": "",
       "paused": false,
       "_computed": {
         "health_score": 85,
         "opportunity_flag": "Strong community engagement",
-        "days_since_push": 12,
-        "generated_at": "2026-08-18T07:28:08.919367+00:00"
+        "days_since_push": 5,
+        "generated_at": "2026-08-19T12:52:07.619106+00:00"
       }
     },
     {
       "created_at": "2018-07-31T19:41:49Z",
       "description": ":bar_chart: :chart_with_upwards_trend:\u2800Robust dataviz framework implemented using D3 & typescript",
-      "forks_count": 217,
+      "forks_count": 218,
       "has_discussions": true,
       "has_pages": true,
       "has_projects": true,
@@ -150,12 +150,12 @@
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
-      "network_count": 217,
-      "open_issues_count": 271,
+      "network_count": 218,
+      "open_issues_count": 272,
       "private": "ionix-ray/carbon-charts",
-      "refreshed_at": "2026-08-18T06:50:23Z",
+      "refreshed_at": "2026-08-19T12:52:03Z",
       "stargazers_count": 1045,
-      "subscribers_count": 29,
+      "subscribers_count": 28,
       "topics": [
         "angular",
         "carbon-design-system",
@@ -172,7 +172,7 @@
         "vanilla",
         "vue"
       ],
-      "updated_at": "2026-08-03T20:02:12Z",
+      "updated_at": "2026-08-18T19:51:34Z",
       "upstream": "carbon-design-system/carbon-charts",
       "upstream_archived": false,
       "upstream_default_branch": "main",
@@ -186,8 +186,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "Active community, many open issues",
-        "days_since_push": 18,
-        "generated_at": "2026-08-18T07:28:08.919367+00:00"
+        "days_since_push": 19,
+        "generated_at": "2026-08-19T12:52:07.619106+00:00"
       }
     },
     {
@@ -216,7 +216,7 @@
       "network_count": 0,
       "open_issues_count": 0,
       "private": "ionix-ray/cli",
-      "refreshed_at": "2026-08-18T06:50:30Z",
+      "refreshed_at": "2026-08-19T12:52:03Z",
       "stargazers_count": 6,
       "subscribers_count": 0,
       "topics": [],
@@ -234,8 +234,8 @@
       "_computed": {
         "health_score": 20,
         "opportunity_flag": "",
-        "days_since_push": 35,
-        "generated_at": "2026-08-18T07:28:08.919367+00:00"
+        "days_since_push": 36,
+        "generated_at": "2026-08-19T12:52:07.619106+00:00"
       }
     },
     {
@@ -280,11 +280,11 @@
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
       "network_count": 499,
-      "open_issues_count": 394,
+      "open_issues_count": 395,
       "private": "ionix-ray/pixie",
-      "refreshed_at": "2026-08-18T06:50:36Z",
-      "stargazers_count": 6508,
-      "subscribers_count": 75,
+      "refreshed_at": "2026-08-19T12:52:03Z",
+      "stargazers_count": 6516,
+      "subscribers_count": 74,
       "topics": [
         "aks",
         "apache-arrow",
@@ -307,28 +307,28 @@
         "px-run",
         "vega"
       ],
-      "updated_at": "2026-08-07T02:12:48Z",
+      "updated_at": "2026-08-18T17:42:38Z",
       "upstream": "pixie-io/pixie",
       "upstream_archived": false,
       "upstream_default_branch": "main",
       "upstream_pushed_at": "2026-07-30T23:00:42Z",
       "upstream_size_kb": 120878,
       "upstream_state": "active",
-      "watchers_count": 6508,
+      "watchers_count": 6516,
       "branch": "main",
       "pause_reason": "",
       "paused": false,
       "_computed": {
         "health_score": 65,
         "opportunity_flag": "High demand, low competition",
-        "days_since_push": 18,
-        "generated_at": "2026-08-18T07:28:08.919367+00:00"
+        "days_since_push": 19,
+        "generated_at": "2026-08-19T12:52:07.619106+00:00"
       }
     },
     {
       "created_at": "2017-03-03T17:02:42Z",
       "description": "Qiskit is an open-source SDK for working with quantum computers at the level of extended quantum circuits, operators, and primitives.",
-      "forks_count": 3003,
+      "forks_count": 3014,
       "has_discussions": false,
       "has_pages": true,
       "has_projects": true,
@@ -337,14 +337,14 @@
       "is_template": false,
       "language": "Python",
       "languages": {
-        "C": 413942,
+        "C": 427277,
         "C++": 1853,
         "CMake": 3603,
         "Jupyter Notebook": 1320,
         "Makefile": 6653,
         "OpenQASM": 22803,
-        "Python": 13207315,
-        "Rust": 5725923,
+        "Python": 13227873,
+        "Rust": 5770510,
         "Shell": 17177
       },
       "last_synced_at": "2026-08-18T06:50:45Z",
@@ -355,12 +355,12 @@
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
-      "network_count": 3003,
-      "open_issues_count": 1141,
+      "network_count": 3014,
+      "open_issues_count": 1148,
       "private": "ionix-ray/qiskit",
-      "refreshed_at": "2026-08-18T06:50:45Z",
-      "stargazers_count": 7687,
-      "subscribers_count": 229,
+      "refreshed_at": "2026-08-19T12:52:03Z",
+      "stargazers_count": 7715,
+      "subscribers_count": 228,
       "topics": [
         "c",
         "python",
@@ -372,28 +372,28 @@
         "rust",
         "sdk"
       ],
-      "updated_at": "2026-08-09T12:41:52Z",
+      "updated_at": "2026-08-19T10:47:46Z",
       "upstream": "Qiskit/qiskit",
       "upstream_archived": false,
       "upstream_default_branch": "main",
-      "upstream_pushed_at": "2026-08-09T00:06:18Z",
-      "upstream_size_kb": 175331,
+      "upstream_pushed_at": "2026-08-19T08:34:49Z",
+      "upstream_size_kb": 176528,
       "upstream_state": "active",
-      "watchers_count": 7687,
+      "watchers_count": 7715,
       "branch": "main",
       "pause_reason": "",
       "paused": false,
       "_computed": {
         "health_score": 65,
         "opportunity_flag": "Active community, many open issues",
-        "days_since_push": 9,
-        "generated_at": "2026-08-18T07:28:08.919367+00:00"
+        "days_since_push": 0,
+        "generated_at": "2026-08-19T12:52:07.619106+00:00"
       }
     },
     {
       "created_at": "2018-09-13T19:18:50Z",
       "description": "A cross-platform, safe, pure-Rust graphics API.",
-      "forks_count": 1385,
+      "forks_count": 1401,
       "has_discussions": true,
       "has_pages": false,
       "has_projects": true,
@@ -408,7 +408,7 @@
         "JavaScript": 31089,
         "Metal": 448214,
         "RenderScript": 2,
-        "Rust": 12409196,
+        "Rust": 12396252,
         "Shell": 1010,
         "Slang": 2422,
         "WGSL": 2195682
@@ -421,11 +421,11 @@
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
-      "network_count": 1385,
-      "open_issues_count": 1233,
+      "network_count": 1401,
+      "open_issues_count": 1244,
       "private": "ionix-ray/wgpu",
-      "refreshed_at": "2026-08-18T06:50:53Z",
-      "stargazers_count": 17752,
+      "refreshed_at": "2026-08-19T12:52:03Z",
+      "stargazers_count": 17822,
       "subscribers_count": 112,
       "topics": [
         "d3d12",
@@ -437,22 +437,22 @@
         "vulkan",
         "webgpu"
       ],
-      "updated_at": "2026-08-09T11:17:45Z",
+      "updated_at": "2026-08-19T12:28:31Z",
       "upstream": "gfx-rs/wgpu",
       "upstream_archived": false,
       "upstream_default_branch": "trunk",
-      "upstream_pushed_at": "2026-08-08T00:07:48Z",
-      "upstream_size_kb": 83352,
+      "upstream_pushed_at": "2026-08-19T12:26:55Z",
+      "upstream_size_kb": 84020,
       "upstream_state": "active",
-      "watchers_count": 17752,
+      "watchers_count": 17822,
       "branch": "trunk",
       "pause_reason": "",
       "paused": false,
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "High demand, low competition",
-        "days_since_push": 10,
-        "generated_at": "2026-08-18T07:28:08.919367+00:00"
+        "days_since_push": 0,
+        "generated_at": "2026-08-19T12:52:07.619106+00:00"
       }
     }
   ]

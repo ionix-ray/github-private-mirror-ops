@@ -1,7 +1,7 @@
 {
   "created_at": "2017-03-03T17:02:42Z",
   "description": "Qiskit is an open-source SDK for working with quantum computers at the level of extended quantum circuits, operators, and primitives.",
-  "forks_count": 3003,
+  "forks_count": 3014,
   "has_discussions": false,
   "has_pages": true,
   "has_projects": true,
@@ -10,14 +10,14 @@
   "is_template": false,
   "language": "Python",
   "languages": {
-    "C": 413942,
+    "C": 427277,
     "C++": 1853,
     "CMake": 3603,
     "Jupyter Notebook": 1320,
     "Makefile": 6653,
     "OpenQASM": 22803,
-    "Python": 13207315,
-    "Rust": 5725923,
+    "Python": 13227873,
+    "Rust": 5770510,
     "Shell": 17177
   },
   "last_synced_at": "2026-08-18T06:50:45Z",
@@ -28,12 +28,12 @@
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
-  "network_count": 3003,
-  "open_issues_count": 1141,
+  "network_count": 3014,
+  "open_issues_count": 1148,
   "private": "ionix-ray/qiskit",
-  "refreshed_at": "2026-08-18T06:50:45Z",
-  "stargazers_count": 7687,
-  "subscribers_count": 229,
+  "refreshed_at": "2026-08-19T12:52:03Z",
+  "stargazers_count": 7715,
+  "subscribers_count": 228,
   "topics": [
     "c",
     "python",
@@ -45,12 +45,12 @@
     "rust",
     "sdk"
   ],
-  "updated_at": "2026-08-09T12:41:52Z",
+  "updated_at": "2026-08-19T10:47:46Z",
   "upstream": "Qiskit/qiskit",
   "upstream_archived": false,
   "upstream_default_branch": "main",
-  "upstream_pushed_at": "2026-08-09T00:06:18Z",
-  "upstream_size_kb": 175331,
+  "upstream_pushed_at": "2026-08-19T08:34:49Z",
+  "upstream_size_kb": 176528,
   "upstream_state": "active",
-  "watchers_count": 7687
+  "watchers_count": 7715
 }
