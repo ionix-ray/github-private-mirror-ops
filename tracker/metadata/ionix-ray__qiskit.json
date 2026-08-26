@@ -20,10 +20,10 @@
     "Rust": 5770510,
     "Shell": 17177
   },
-  "last_synced_at": "2026-08-25T06:55:14Z",
+  "last_synced_at": "2026-08-26T06:56:21Z",
   "last_synced_sha": "2373b5dfb25fc42d18ac27615e25f99e7a29afd7",
   "last_synced_status": "diverged",
-  "last_upstream_sha": "d0b4c662411c7bd28de46616a11086f252c49c53",
+  "last_upstream_sha": "4e0f21adda3273ecc74807a51827da480220b230",
   "last_validated_at": "",
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
@@ -31,7 +31,7 @@
   "network_count": 3014,
   "open_issues_count": 1148,
   "private": "ionix-ray/qiskit",
-  "refreshed_at": "2026-08-25T06:55:14Z",
+  "refreshed_at": "2026-08-26T06:56:21Z",
   "stargazers_count": 7715,
   "subscribers_count": 228,
   "topics": [
