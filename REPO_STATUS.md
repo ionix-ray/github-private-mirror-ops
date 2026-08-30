@@ -1,6 +1,6 @@
 # Mirror Registry Status Dashboard
 
-_Auto-generated private dashboard. Last updated: `2026-08-29T12:52:00.688956+00:00`._
+_Auto-generated private dashboard. Last updated: `2026-08-30T11:35:39.094435+00:00`._
 
 ## Summary
 
@@ -47,9 +47,9 @@ _Auto-generated private dashboard. Last updated: `2026-08-29T12:52:00.688956+00:
 |---|--------|----------|---------|-------|-------|--------|------|-----------|--------|-------------|
 | 1 | 🟢 active | [Falcon-Forge/PiRanha](https://github.com/Falcon-Forge/PiRanha) | [ionix-ray/PiRanha](https://github.com/ionix-ray/PiRanha) | 5 | 10 | 0 | - | 2026-06-20 | 🔴 22 | - |
 | 2 | 🟢 active | [google-antigravity/antigravity-sdk-python](https://github.com/google-antigravity/antigravity-sdk-python) | [ionix-ray/antigravity-sdk-python](https://github.com/ionix-ray/antigravity-sdk-python) | 3,087 | 1,218 | 35 | Python | 2026-08-13 | 🟢 85 | Strong community engagement |
-| 3 | 🟢 active | [carbon-design-system/carbon-charts](https://github.com/carbon-design-system/carbon-charts) | [ionix-ray/carbon-charts](https://github.com/ionix-ray/carbon-charts) | 1,045 | 218 | 272 | HTML | 2026-07-31 | 🟡 75 | Active community, many open issues |
+| 3 | 🟢 active | [carbon-design-system/carbon-charts](https://github.com/carbon-design-system/carbon-charts) | [ionix-ray/carbon-charts](https://github.com/ionix-ray/carbon-charts) | 1,045 | 218 | 272 | HTML | 2026-07-31 | 🟡 65 | Active community, many open issues |
 | 4 | 🟢 active | [belt-sh/cli](https://github.com/belt-sh/cli) | [ionix-ray/cli](https://github.com/ionix-ray/cli) | 6 | 0 | 0 | Shell | 2026-07-13 | 🔴 20 | - |
-| 5 | 🟢 active | [pixie-io/pixie](https://github.com/pixie-io/pixie) | [ionix-ray/pixie](https://github.com/ionix-ray/pixie) | 6,516 | 499 | 395 | C++ | 2026-07-30 | 🟡 65 | High demand, low competition |
+| 5 | 🟢 active | [pixie-io/pixie](https://github.com/pixie-io/pixie) | [ionix-ray/pixie](https://github.com/ionix-ray/pixie) | 6,516 | 499 | 395 | C++ | 2026-07-30 | 🟡 55 | High demand, low competition |
 | 6 | 🟢 active | [Qiskit/qiskit](https://github.com/Qiskit/qiskit) | [ionix-ray/qiskit](https://github.com/ionix-ray/qiskit) | 7,715 | 3,014 | 1,148 | Python | 2026-08-19 | 🟡 65 | Active community, many open issues |
 | 7 | 🟢 active | [gfx-rs/wgpu](https://github.com/gfx-rs/wgpu) | [ionix-ray/wgpu](https://github.com/ionix-ray/wgpu) | 17,822 | 1,401 | 1,244 | Rust | 2026-08-19 | 🟡 75 | High demand, low competition |
 
