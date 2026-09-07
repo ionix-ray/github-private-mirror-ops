@@ -1,7 +1,7 @@
 {
   "branch": "main",
-  "pause_reason": "",
-  "paused": false,
+  "pause_reason": "diverged from upstream (auto-paused by sync-mirror)",
+  "paused": true,
   "private": "ionix-ray/cli",
   "upstream": "belt-sh/cli"
 }
