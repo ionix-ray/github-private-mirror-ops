@@ -1,7 +1,7 @@
 {
   "created_at": "2018-09-13T19:18:50Z",
   "description": "A cross-platform, safe, pure-Rust graphics API.",
-  "forks_count": 1401,
+  "forks_count": 1449,
   "has_discussions": true,
   "has_pages": false,
   "has_projects": true,
@@ -10,16 +10,16 @@
   "is_template": false,
   "language": "Rust",
   "languages": {
-    "GLSL": 522779,
-    "HLSL": 338297,
+    "GLSL": 529329,
+    "HLSL": 345186,
     "HTML": 702,
-    "JavaScript": 31089,
-    "Metal": 448214,
+    "JavaScript": 31287,
+    "Metal": 457370,
     "RenderScript": 2,
-    "Rust": 12396252,
+    "Rust": 12695876,
     "Shell": 1010,
     "Slang": 2422,
-    "WGSL": 2195682
+    "WGSL": 2199890
   },
   "last_synced_at": "2026-09-14T12:17:22Z",
   "last_synced_sha": "d21c0d08ef9500901fda7c4deec1c7cacf0781cc",
@@ -29,12 +29,12 @@
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
-  "network_count": 1401,
-  "open_issues_count": 1244,
+  "network_count": 1449,
+  "open_issues_count": 1265,
   "private": "ionix-ray/wgpu",
-  "refreshed_at": "2026-09-14T12:17:22Z",
-  "stargazers_count": 17822,
-  "subscribers_count": 112,
+  "refreshed_at": "2026-09-15T05:46:09Z",
+  "stargazers_count": 18069,
+  "subscribers_count": 117,
   "topics": [
     "d3d12",
     "gpu",
@@ -45,12 +45,12 @@
     "vulkan",
     "webgpu"
   ],
-  "updated_at": "2026-08-19T12:28:31Z",
+  "updated_at": "2026-09-15T05:35:10Z",
   "upstream": "gfx-rs/wgpu",
   "upstream_archived": false,
   "upstream_default_branch": "trunk",
-  "upstream_pushed_at": "2026-08-19T12:26:55Z",
-  "upstream_size_kb": 84020,
+  "upstream_pushed_at": "2026-09-15T05:35:06Z",
+  "upstream_size_kb": 85728,
   "upstream_state": "active",
-  "watchers_count": 17822
+  "watchers_count": 18069
 }

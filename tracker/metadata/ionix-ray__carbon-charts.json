@@ -1,7 +1,7 @@
 {
   "created_at": "2018-07-31T19:41:49Z",
   "description": ":bar_chart: :chart_with_upwards_trend:⠀Robust dataviz framework implemented using D3 & typescript",
-  "forks_count": 218,
+  "forks_count": 216,
   "has_discussions": true,
   "has_pages": true,
   "has_projects": true,
@@ -26,11 +26,11 @@
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
-  "network_count": 218,
-  "open_issues_count": 272,
+  "network_count": 216,
+  "open_issues_count": 273,
   "private": "ionix-ray/carbon-charts",
-  "refreshed_at": "2026-09-14T12:17:02Z",
-  "stargazers_count": 1045,
+  "refreshed_at": "2026-09-15T05:46:09Z",
+  "stargazers_count": 1049,
   "subscribers_count": 28,
   "topics": [
     "angular",
@@ -48,12 +48,12 @@
     "vanilla",
     "vue"
   ],
-  "updated_at": "2026-08-18T19:51:34Z",
+  "updated_at": "2026-09-13T00:58:33Z",
   "upstream": "carbon-design-system/carbon-charts",
   "upstream_archived": false,
   "upstream_default_branch": "main",
-  "upstream_pushed_at": "2026-07-31T06:23:53Z",
-  "upstream_size_kb": 1204386,
+  "upstream_pushed_at": "2026-09-08T14:02:19Z",
+  "upstream_size_kb": 1205319,
   "upstream_state": "active",
-  "watchers_count": 1045
+  "watchers_count": 1049
 }
