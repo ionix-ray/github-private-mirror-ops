@@ -28,6 +28,7 @@ run "4. merge-conflict simulation" tests/test-no-conflict.sh
 run "5. lib-gh helpers" tests/test-lib-gh.sh
 run "6. owner config + dropdown drift" tests/test-owners.sh
 run "7. ownership guard + pause-branch leak" tests/test-ownership.sh
+run "8. sync divergence-noise guard" tests/test-sync-guard.sh
 
 echo ""
 if (( rc )); then echo "==== SUITE: FAIL ===="; else echo "==== SUITE: PASS ===="; fi
