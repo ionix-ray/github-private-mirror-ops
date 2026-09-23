@@ -130,21 +130,13 @@ if [[ "$OPEN_ISSUE" == "true" ]]; then
     # Lookup error (rc=2): fail CLOSED — creating blind risks a duplicate.
     log "::warning::issue lookup failed for $PRIVATE_FULL — skipping creation this run"
   else
-    body=$(jq -nc \
-      --arg up "$UPSTREAM_FULL" \
-      --arg pr "$PRIVATE_FULL" \
-      --arg br "$BRANCH" \
-      --arg upsha "$UP_SHA" \
-      --arg prsha "$PR_SHA" \
-      '{title:("Mirror diverged: " + $pr),
-        body:("Private mirror `" + $pr + "` has diverged from upstream `" + $up + "` on branch `" + $br + "`.\n\n- upstream: `" + $upsha + "`\n- private:  `" + $prsha + "`\n\nFast-forward is impossible. The mirror has been auto-paused; reconcile manually (merge or rewrite) then unpause.") }')
-    issue_json="$TMPDIR_RUN/issue.json"
-    http="$(curl_gh -o "$issue_json" -w '%{http_code}' \
-      -d "$body" \
-      "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues" || echo 000)"
-    [[ "$http" == "201" ]] \
-      && log "divergence issue created: $(jq -r '.html_url' "$issue_json")" \
-      || log "issue creation failed (HTTP $http): $(jq -r '.message // .' "$issue_json" 2>/dev/null || true)"
+    body="$(printf 'Private mirror `%s` has diverged from upstream `%s` on branch `%s`.\n\n- upstream: `%s`\n- private:  `%s`\n\nFast-forward is impossible. The mirror has been auto-paused; reconcile manually (merge or rewrite) then unpause.' \
+      "$PRIVATE_FULL" "$UPSTREAM_FULL" "$BRANCH" "$UP_SHA" "$PR_SHA")"
+    if issue_url="$(gh_open_issue "$GITHUB_REPOSITORY" "$issue_title" "$body")"; then
+      log "divergence issue created: $issue_url"
+    else
+      log "::warning::issue creation failed for $PRIVATE_FULL"
+    fi
   fi
 fi
 
@@ -180,18 +172,13 @@ if [[ "$PAUSE_REPO" == "true" ]]; then
       || { log "nothing to commit for pause"; git checkout -q "$orig_ref" 2>/dev/null || true; exit 0; }
     git push "https://github.com/${GITHUB_REPOSITORY}.git" "$branch_name" >/dev/null 2>&1
 
-    pr_body=$(jq -nc \
-      --arg t "pause: $PRIVATE_FULL (diverged)" \
-      --arg h "$branch_name" \
-      --arg b "Auto-paused by \`sync-mirror.yml\`: \`$PRIVATE_FULL\` diverged from \`$UPSTREAM_FULL\` on branch \`$BRANCH\`. Reconcile manually, then set \`paused\` back to \`false\`." \
-      '{title:$t, head:$h, base:"main", body:$b}')
-    pause_json="$TMPDIR_RUN/pause.json"
-    http="$(curl_gh -o "$pause_json" -w '%{http_code}' \
-      -d "$pr_body" \
-      "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls" || echo 000)"
-    [[ "$http" == "201" ]] \
-      && log "auto-pause PR opened: $(jq -r '.html_url' "$pause_json")" \
-      || log "auto-pause PR creation failed (HTTP $http)"
+    pr_body="$(printf 'Auto-paused by `sync-mirror.yml`: `%s` diverged from `%s` on branch `%s`. Reconcile manually, then set `paused` back to `false`.' \
+      "$PRIVATE_FULL" "$UPSTREAM_FULL" "$BRANCH")"
+    if pr_url="$(gh_open_pr "$GITHUB_REPOSITORY" "pause: $PRIVATE_FULL (diverged)" "$branch_name" "$pr_body")"; then
+      log "auto-pause PR opened: $pr_url"
+    else
+      log "::warning::auto-pause PR creation failed for $PRIVATE_FULL"
+    fi
 
     # CRITICAL: return to the original branch so the caller (sync-mirrors.yml
     # main push) cannot pick up the pause/* registry edit. commit-bot-changes.sh

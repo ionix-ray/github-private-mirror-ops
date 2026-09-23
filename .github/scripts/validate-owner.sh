@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 # validate-owner.sh OWNER
-# Verifies PAT (env GH_TOKEN) can write to OWNER (user or org).
-# Exits non-zero on any failure. Never echoes the token.
+# Verifies the secret-store PAT (env GH_TOKEN) can work under OWNER (user/org).
+# Pure `gh` CLI + `git` — no raw REST, no curl. Never echoes the token.
+# Exits non-zero on any failure.
+#
+# Checks: token present, `gh auth status` green, login parsed from that same
+# output (no extra calls), OWNER resolvable via `gh repo list`, classic-token
+# scope check when the scopes line is present, else required-permissions
+# guidance. Write access itself is enforced server-side at create/push time
+# with diagnostics there.
 
 set -euo pipefail
 
@@ -16,95 +23,57 @@ is_valid_owner_or_repo "$OWNER" || {
   exit 1
 }
 
+require_gh_token || exit 1
 mask_token || exit 1
 
-TMPDIR_RUN="$(mktemp -d -t validate.XXXXXXXX)"
-chmod 0700 "$TMPDIR_RUN"
-trap 'rm -rf "$TMPDIR_RUN"' EXIT
-OWNER_JSON="$TMPDIR_RUN/owner.json"
-ME_JSON="$TMPDIR_RUN/me.json"
-MEM_JSON="$TMPDIR_RUN/mem.json"
-HDR_FILE="$TMPDIR_RUN/headers.txt"
+AUTH_OUT="$(gh auth status 2>&1)" || {
+  echo "::error::PAT auth failed (gh auth status non-zero)"
+  exit 1
+}
+me="$(sed -n 's/.*account \([^ ]*\).*/\1/p' <<<"$AUTH_OUT" | head -n 1)"
+[[ -n "$me" ]] || { echo "::error::could not parse login from gh auth status"; exit 1; }
+echo "PAT identity: '$me'"
 
-# Determine if user or org
-http="$(gh_api GET "https://api.github.com/users/${OWNER}" "$OWNER_JSON")"
-
-if [[ "$http" != "200" ]]; then
-  echo "::error::owner '$OWNER' not found (HTTP $http)"
+# Owner must resolve and be listable (works for users and orgs alike).
+if ! gh repo list "$OWNER" --limit 1 --json nameWithOwner >/dev/null 2>&1; then
+  echo "::error::owner '$OWNER' not found or not readable with this PAT"
   exit 1
 fi
-kind=$(jq -r '.type' "$OWNER_JSON")
 
-# Check the PAT identity actually has rights
-who_http="$(gh_api GET "https://api.github.com/user" "$ME_JSON")"
-if [[ "$who_http" != "200" ]]; then
-  echo "::error::PAT auth failed (HTTP $who_http)"
-  exit 1
-fi
-me=$(jq -r '.login' "$ME_JSON")
-
-if [[ "$kind" == "User" ]]; then
-  if [[ "$me" != "$OWNER" ]]; then
-    echo "::error::PAT identity is '$me' but target user is '$OWNER' — classic PATs can only create repos for the user that owns them"
-    exit 1
-  fi
-elif [[ "$kind" == "Organization" ]]; then
-  # Org membership check (state must be 'active')
-  mem_http="$(gh_api GET "https://api.github.com/orgs/${OWNER}/memberships/${me}" "$MEM_JSON")"
-  if [[ "$mem_http" != "200" ]]; then
-    echo "::error::PAT user '$me' is not a member of org '$OWNER' (HTTP $mem_http)"
-    exit 1
-  fi
-  state=$(jq -r '.state' "$MEM_JSON")
-  role=$(jq -r '.role'  "$MEM_JSON")
-  if [[ "$state" != "active" ]]; then
-    echo "::error::membership state is '$state' — PAT must belong to an active org member"
-    exit 1
-  fi
-  echo "owner '$OWNER' is Organization; PAT user '$me' role=$role state=$state"
+if [[ "$me" == "$OWNER" ]]; then
+  kind="User"
+  echo "owner '$OWNER' is the PAT user"
 else
-  echo "::error::unsupported owner type '$kind'"
-  exit 1
+  kind="Organization (assumed — membership + write enforced server-side at create/push)"
+  echo "owner '$OWNER' differs from PAT user '$me' — treating as organization"
 fi
 
 # Detect token style — fine-grained PATs / App tokens don't expose classic scopes.
 token_kind_="$(token_kind)"
 echo "PAT kind: $token_kind_"
 
-if [[ "$token_kind_" == "classic" ]]; then
-  # Confirm required scopes are present on the token.
-  # Use -D to dump headers to a file (avoids -I which can be silently dropped by some proxies).
-  curl -sS -D "$HDR_FILE" -o /dev/null \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    "https://api.github.com/user"
-  scopes=$(awk -F': ' 'tolower($1)=="x-oauth-scopes"{print $2}' "$HDR_FILE" | tr -d '\r')
-
-  echo "PAT scopes: ${scopes:-<none reported>}"
+scopes_line="$(grep -i "token scopes" <<<"$AUTH_OUT" || true)"
+if [[ -n "$scopes_line" ]]; then
+  echo "PAT scopes: $scopes_line"
   missing=()
-  for need in repo workflow; do
-    case ",${scopes// /}," in
-      *",$need,"*) ;;
-      *) missing+=("$need") ;;
-    esac
+  for need in "'repo'" "'workflow'"; do
+    grep -q "$need" <<<"$scopes_line" || missing+=("$need")
   done
-  if (( ${#missing[@]} > 0 )); then
-    echo "::error::classic PAT missing required scopes: ${missing[*]}"
+  # 'repo' alone suffices for classic repo work; workflow only matters for
+  # pushing workflow files — flag it but do not fail (server enforces).
+  if grep -q "'repo'" <<<"$scopes_line"; then
+    echo "scope check passed (repo present)"
+  else
+    echo "::error::classic PAT missing required scope 'repo'"
     exit 1
+  fi
+  if [[ ${#missing[@]} -gt 0 ]]; then
+    echo "::warning::classic PAT may lack: ${missing[*]} (needed only if workflows/ files are pushed)"
   fi
 else
-  # Fine-grained PATs / App tokens don't enumerate classic scopes.
-  # Probe required permissions functionally instead.
-  echo "::notice::token kind '$token_kind_' — skipping classic scope header check; probing permissions instead"
-
-  # Probe 1: token must be able to read its own user record (already done above).
-  # Probe 2: token must be able to list private repos (requires repo:read or contents:read).
-  probe_http="$(gh_api GET "https://api.github.com/user/repos?per_page=1&visibility=all" /dev/null)"
-  if [[ "$probe_http" != "200" ]]; then
-    echo "::error::token cannot list user repos (HTTP $probe_http) — needs repo:read / contents:read + administration:write equivalent for create"
-    exit 1
-  fi
-  echo "permission probe passed (user/repos -> HTTP 200)"
-  echo "::warning::workflow scope cannot be verified for non-classic tokens at runtime — confirm the fine-grained PAT was issued with 'Actions: read & write' + 'Contents: read & write' + 'Administration: read & write' + 'Workflows: read & write'"
+  echo "::notice::no classic scope line (kind '$token_kind_') — skipping scope check; required PAT permissions:"
+  echo "  classic: 'repo' (+ 'workflow' if pushing workflow files)"
+  echo "  fine-grained: Administration read/write + Contents read/write (+ Actions/Workflows read/write as needed)"
 fi
 
 echo "owner=$OWNER kind=$kind validated"

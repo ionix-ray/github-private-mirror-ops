@@ -49,64 +49,22 @@ TMPDIR_RUN="$(mktemp -d -t bulk.XXXXXXXX)"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 chmod 0700 "$TMPDIR_RUN"
 
-# --- Rate limit sanity check ---
-RATELIMIT_JSON="$TMPDIR_RUN/ratelimit.json"
-rl="$(gh_api GET "https://api.github.com/rate_limit" "$RATELIMIT_JSON" || echo 000)"
-if [[ "$rl" == "200" ]]; then
-  remaining=$(jq -r '.resources.core.remaining // 0' "$RATELIMIT_JSON")
-  # Need at least 3 API calls per repo (list + check exists + create + push + register)
-  # Plus initial rate limit call
-  min_needed=$((MAX_REPOS * 5 + 10))
-  if (( remaining < min_needed )); then
-    echo "::error::rate limit too low ($remaining remaining, need ~$min_needed). Wait or reduce MAX_REPOS."
-    exit 1
-  fi
-  echo "rate limit OK: $remaining remaining (need ~$min_needed)"
-else
-  echo "::warning::could not check rate limit (HTTP $rl) — proceeding anyway"
-fi
-
-# --- Discover public repos via pagination ---
+# --- Discover public repos (one `gh` call, capped by MAX_REPOS) ---
+# No explicit rate-limit precheck: `gh` surfaces exhaustion clearly, the run is
+# throttled (sleep 2 per repo), and per-repo failures are counted, not fatal.
 echo "discovering public repos for $SOURCE_OWNER ..."
 REPOS_JSON="$TMPDIR_RUN/repos.json"
-page=1
-per_page=100
+REPOS_ERR="$TMPDIR_RUN/repos.err"
 all_repos="$TMPDIR_RUN/all_repos.txt"
 true > "$all_repos"
 
-discovered=0
-while (( discovered < MAX_REPOS )); do
-  http="$(gh_api GET "https://api.github.com/users/${SOURCE_OWNER}/repos?type=public&per_page=${per_page}&page=${page}" "$REPOS_JSON" || echo 000)"
-
-  if [[ "$http" != "200" ]]; then
-    msg=$(jq -r '.message // ""' "$REPOS_JSON" 2>/dev/null || true)
-    echo "::error::repo discovery failed (HTTP $http): $msg"
-    exit 1
-  fi
-
-  count_this_page=$(jq 'length' "$REPOS_JSON")
-  if (( count_this_page == 0 )); then
-    break
-  fi
-
-  jq -r '.[] | select(.private == false or .visibility == "public") | .full_name' "$REPOS_JSON" >> "$all_repos"
-  discovered=$(wc -l < "$all_repos" | tr -d ' ')
-
-  if (( count_this_page < per_page )); then
-    break
-  fi
-  page=$((page + 1))
-  # Throttle discovery to avoid burning rate limit early
-  sleep 1
-done
-
-# Truncate to MAX_REPOS
-discovered=$(wc -l < "$all_repos" | tr -d ' ')
-if (( discovered > MAX_REPOS )); then
-  head -n "$MAX_REPOS" "$all_repos" > "${all_repos}.tmp"
-  mv "${all_repos}.tmp" "$all_repos"
-  discovered=$MAX_REPOS
+if ! gh_repo_list_public "$SOURCE_OWNER" "$MAX_REPOS" "$REPOS_JSON" "$REPOS_ERR"; then
+  echo "::error::repo discovery failed ($(tail -n 1 "$REPOS_ERR" 2>/dev/null || true))"
+  exit 1
 fi
+
+jq -r '.[] | select(.private == false) | .full_name' "$REPOS_JSON" > "$all_repos"
+discovered=$(wc -l < "$all_repos" | tr -d ' ')
 
 if (( discovered == 0 )); then
   echo "no public repos found for $SOURCE_OWNER"
@@ -237,15 +195,14 @@ if [[ "$DELETE_ORIGINAL" == "true" && -s "$delete_list" ]]; then
   echo "--- Deleting original public repos ---"
   cat "$delete_list" | while IFS= read -r repo; do
     echo "deleting $repo ..."
-    del_http="$(gh_api DELETE "https://api.github.com/repos/${repo}" /dev/null || echo 000)"
-    if [[ "$del_http" == "204" ]]; then
+    if del_err="$(gh_delete_repo "$repo" 2>&1)"; then
       echo "deleted $repo"
-    elif [[ "$del_http" == "403" ]]; then
-      echo "::warning::cannot delete $repo (403) — token lacks admin permission or you do not own this repo"
-    elif [[ "$del_http" == "404" ]]; then
-      echo "::warning::$repo already deleted or not found (404)"
+    elif grep -qi "admin\|permission\|403\|forbidden" <<<"$del_err"; then
+      echo "::warning::cannot delete $repo — token lacks admin permission or you do not own this repo"
+    elif grep -qi "not found\|could not resolve\|404" <<<"$del_err"; then
+      echo "::warning::$repo already deleted or not found"
     else
-      echo "::warning::delete $repo returned HTTP $del_http"
+      echo "::warning::delete $repo failed ($(tail -n 1 <<<"$del_err"))"
     fi
     sleep 1
   done

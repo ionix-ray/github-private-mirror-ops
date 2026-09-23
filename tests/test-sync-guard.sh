@@ -109,15 +109,17 @@ else
 fi
 
 echo "== 6. dedup: existing open issue / pause PR detected, absent ones missed =="
-# Stub the network layer: gh_api answers from fixtures.
-ISSUE_JSON='[{"number":1,"title":"Mirror diverged: ionix-ray/wgpu","pull_request":null},{"number":2,"title":"Some PR","pull_request":{"url":"x"}}]'
-PR_JSON='[{"number":7,"title":"pause: ionix-ray/wgpu (diverged)","head":{"ref":"pause/ionix-ray-wgpu-20260921070000"}}]'
-gh_api() { # METHOD URL BODY -> fixture + 200, single page
-  case "$2" in
-    */issues*) printf '%s' "$ISSUE_JSON" > "$3" ;;
-    */pulls*)  printf '%s' "$PR_JSON" > "$3" ;;
+# Stub the `gh` CLI: list subcommands answer from fixtures.
+# NOTE: `gh issue list` never returns pull requests (excluded by design).
+ISSUE_JSON='[{"number":1,"title":"Mirror diverged: ionix-ray/wgpu"},{"number":2,"title":"Something else"}]'
+PR_JSON='[{"number":7,"title":"pause: ionix-ray/wgpu (diverged)","headRefName":"pause/ionix-ray-wgpu-20260921070000"}]'
+gh() { # list subcommands print fixtures on stdout (callers redirect)
+  case "$1 $2" in
+    "issue list") printf '%s' "$ISSUE_JSON" ;;
+    "pr list")    printf '%s' "$PR_JSON" ;;
+    *) echo "unexpected gh call: $*" >&2; return 1 ;;
   esac
-  echo 200
+  return 0
 }
 if divergence_issue_exists "o/ops" "Mirror diverged: ionix-ray/wgpu"; then
   note "PASS  existing divergence issue detected"
@@ -141,34 +143,36 @@ else
 fi
 
 echo "== 7. close_divergence_issues closes exact-title bot issues only =="
-gh_api() { # serve one page: 2 bot issues (one is really a PR), 1 unrelated
-  printf '%s' '[{"number":11,"title":"Mirror diverged: ionix-ray/wgpu"},{"number":12,"title":"Mirror diverged: ionix-ray/wgpu","pull_request":{"url":"x"}},{"number":13,"title":"Something else"}]' > "$3"
-  echo 200
+gh() { # list serves 2 matching-title issues + 1 unrelated; mutations logged
+  case "$1 $2" in
+    "issue list")
+      printf '%s' '[{"number":11,"title":"Mirror diverged: ionix-ray/wgpu"},{"number":13,"title":"Something else"}]' ;;
+    "issue comment"|"issue close")
+      printf '%s\n' "GH $1 $2 $3" >> "$WORK/calls" ;;
+    *) echo "unexpected gh call: $*" >&2; return 1 ;;
+  esac
+  return 0
 }
-# shellcheck disable=SC2317
-curl_gh() { printf '%s\n' "CURLGH $*" >> "$WORK/calls"; echo 200; }
 : > "$WORK/calls"
 close_divergence_issues "o/ops" "ionix-ray/wgpu" "test reason" >/dev/null
-if grep -q "issues/11/comments" "$WORK/calls" && grep -q "issues/11" "$WORK/calls"; then
+if grep -q "GH issue comment 11" "$WORK/calls" && grep -q "GH issue close 11" "$WORK/calls"; then
   note "PASS  bot issue #11 commented + closed"
 else
   note "FAIL  bot issue #11 not closed"; fail=1
 fi
-if grep -q "issues/12" "$WORK/calls"; then
-  note "FAIL  PR #12 touched (must skip pull requests)"; fail=1
-else
-  note "PASS  pull request #12 untouched"
-fi
-if grep -q "issues/13" "$WORK/calls"; then
+if grep -q " 13" "$WORK/calls"; then
   note "FAIL  unrelated issue #13 touched"; fail=1
 else
   note "PASS  unrelated issue #13 untouched"
 fi
 
 echo "== 8. anchored head match: siblings do not collide; errors fail closed =="
-gh_api() { # one pause PR for cli-foo only (head shape + title)
-  printf '%s' '[{"number":21,"title":"pause: ionix-ray/cli-foo (diverged)","head":{"ref":"pause/ionix-ray-cli-foo-20260921070000"}}]' > "$3"
-  echo 200
+gh() { # one pause PR for cli-foo only (head shape + title)
+  if [[ "$1 $2" == "pr list" ]]; then
+    printf '%s' '[{"number":21,"title":"pause: ionix-ray/cli-foo (diverged)","headRefName":"pause/ionix-ray-cli-foo-20260921070000"}]'
+    return 0
+  fi
+  echo "unexpected gh call: $*" >&2; return 1
 }
 if pause_pr_exists "o/ops" "ionix-ray/cli-foo"; then
   note "PASS  sibling pause PR detected"
@@ -180,11 +184,37 @@ if pause_pr_exists "o/ops" "ionix-ray/cli"; then
 else
   note "PASS  no dash-prefix collision on sibling"
 fi
-gh_api() { echo 000; return 1; } # total API outage
+gh() { echo "GraphQL: Could not resolve" >&2; return 1; } # total outage
 if divergence_issue_exists "o/ops" "Mirror diverged: ionix-ray/wgpu" >/dev/null 2>&1; then rc=0; else rc=$?; fi
 if (( rc == 2 )); then note "PASS  issue lookup error returns 2"; else note "FAIL  issue lookup rc=$rc (want 2)"; fail=1; fi
 if pause_pr_exists "o/ops" "ionix-ray/wgpu" >/dev/null 2>&1; then rc=0; else rc=$?; fi
 if (( rc == 2 )); then note "PASS  PR lookup error returns 2"; else note "FAIL  PR lookup rc=$rc (want 2)"; fail=1; fi
+
+echo "== 9. gh_normalize_repo maps GraphQL shape to REST names =="
+cat > "$WORK/gh-shape.json" <<'JSON'
+{"description":"d","homepageUrl":"https://h","primaryLanguage":{"name":"Rust"},
+ "languages":[{"size":10,"node":{"name":"Rust"}},{"size":5,"node":{"name":"Shell"}}],
+ "repositoryTopics":[{"name":"a"},{"name":"b"}],
+ "stargazerCount":3,"forkCount":4,"issues":{"totalCount":5},"watchers":{"totalCount":6},
+ "createdAt":"2020-01-01T00:00:00Z","updatedAt":"2021-01-01T00:00:00Z","pushedAt":"2022-01-01T00:00:00Z",
+ "defaultBranchRef":{"name":"main"},"diskUsage":7,"isArchived":false,"isTemplate":false,
+ "hasDiscussionsEnabled":true,"hasWikiEnabled":false,"hasProjectsEnabled":true,
+ "licenseInfo":{"key":"apache-2.0","name":"Apache License 2.0"},"isPrivate":false,"visibility":"PUBLIC"}
+JSON
+norm="$(gh_normalize_repo "$WORK/gh-shape.json")"
+check "language" "Rust" "$(jq -r '.language' <<<"$norm")"
+check "languages map" '{"Rust":10,"Shell":5}' "$(jq -c '.languages' <<<"$norm")"
+check "topics" '["a","b"]' "$(jq -c '.topics' <<<"$norm")"
+check "stars" "3" "$(jq -r '.stargazers_count' <<<"$norm")"
+check "open issues" "5" "$(jq -r '.open_issues_count' <<<"$norm")"
+check "default branch" "main" "$(jq -r '.default_branch' <<<"$norm")"
+check "size kb" "7" "$(jq -r '.size' <<<"$norm")"
+check "license spdx canonical" "Apache-2.0" "$(jq -r '.license.spdx_id' <<<"$norm")"
+check "visibility lowered" "public" "$(jq -r '.visibility' <<<"$norm")"
+jq '.licenseInfo.key = "mit"' "$WORK/gh-shape.json" > "$WORK/gh-mit.json"
+check "mit canonical" "MIT" "$(gh_normalize_repo "$WORK/gh-mit.json" | jq -r '.license.spdx_id')"
+jq 'del(.licenseInfo)' "$WORK/gh-shape.json" > "$WORK/gh-nolic.json"
+check "missing license null" "null" "$(gh_normalize_repo "$WORK/gh-nolic.json" | jq -r '.license.spdx_id // "null"')"
 
 echo ""
 if (( fail )); then echo "=== sync-guard test: FAIL ==="; exit 1; fi

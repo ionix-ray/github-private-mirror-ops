@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
-# lib-gh.sh — shared GitHub API + hardening helpers for mirror-ops scripts.
+# lib-gh.sh — shared GitHub + hardening helpers for mirror-ops scripts.
 # Source from scripts:  . "$(dirname "$0")/lib-gh.sh"
 #
+# Auth model: the `gh` CLI and `git` read GH_TOKEN from the environment
+# (Actions secret store via the workflow env). Scripts NEVER handle, print, or
+# pass the token: no curl, no Authorization headers, no token in argv/URLs.
+# Presence is asserted (require_gh_token); the value is never echoed.
+#
 # All functions are pure (no global state) except those that export the
-# per-run tempdir, so they are unit-testable offline. Keep it dependency-free
-# (bash + curl + jq only) so the Actions runners and CI stay light.
+# per-run tempdir, so they are unit-testable offline. Dependencies: bash +
+# git + gh + jq, all preinstalled on ubuntu-latest runners.
 
 set -euo pipefail
 
@@ -50,28 +55,137 @@ token_kind() {
   esac
 }
 
-#---------------------------------------------------------------------------
-# curl wrapper — the PAT is read from a 0600 config file, NEVER passed in argv
-# (so it cannot leak via `ps`, process inspection, or shell trace).
-#   curl_gh [curl args...] URL   -> curl with GitHub auth headers from config
-#   gh_api METHOD URL [BODY_FILE]  -> echoes HTTP code, writes body (or /dev/null)
-#   Use `|| echo 000` at the call site to survive network timeouts.
-#---------------------------------------------------------------------------
-curl_gh() {
-  local cfg rc=0
-  cfg="$(mktemp -t gh.XXXXXXXX)" || return 1
-  chmod 0600 "$cfg"
-  printf 'header = "Accept: application/vnd.github+json"\nheader = "Authorization: Bearer %s"\nheader = "X-GitHub-Api-Version: 2022-11-28"\n' "${GH_TOKEN:-}" > "$cfg"
-  # No RETURN trap: a stale trap would fire on every later function return in
-  # the caller (referencing out-of-scope $cfg under `set -u`). Explicit cleanup.
-  curl -sS -K "$cfg" "$@" || rc=$?
-  rm -f "$cfg"
-  return "$rc"
+# require_gh_token — assert the CLI + secret-store token exist. Never prints it.
+require_gh_token() {
+  command -v gh >/dev/null 2>&1 || { echo "::error::gh CLI not found on PATH"; return 1; }
+  [[ -n "${GH_TOKEN:-}" ]] || { echo "::error::GH_TOKEN is empty or missing (must come from the Actions secret store)"; return 1; }
 }
 
-gh_api() {
-  local method="$1" url="$2" body="${3:-/dev/null}"
-  curl_gh -o "$body" -w '%{http_code}' -X "$method" "$url"
+#---------------------------------------------------------------------------
+# GitHub access — everything goes through `gh` (auth from GH_TOKEN env) or
+# plain `git`. No raw REST, no curl, no token plumbing in scripts.
+# Convention: helpers returning data take OUTFILE (+ optional ERRFILE) args
+# and return 0/1; callers classify failures via gh_failed_* on the stderr file.
+#---------------------------------------------------------------------------
+
+# gh_repo_fields — GraphQL fields fetched for one repo snapshot.
+GH_REPO_FIELDS="nameWithOwner,description,homepageUrl,primaryLanguage,languages,repositoryTopics,stargazerCount,forkCount,issues,watchers,createdAt,updatedAt,pushedAt,defaultBranchRef,diskUsage,isArchived,isTemplate,hasDiscussionsEnabled,hasWikiEnabled,hasProjectsEnabled,licenseInfo,isPrivate,visibility"
+
+# gh_repo_json FULL OUTFILE [ERRFILE] -> 0 with normalized REST-shaped JSON.
+# Normalizes the gh (GraphQL) shape to the REST shape downstream jq already
+# expects, so callers keep their field names. Keys without a gh equivalent
+# (has_pages) default; network/subscriber counts map to their closest counter.
+gh_repo_json() {
+  local full="$1" out="$2" err="${3:-/dev/null}"
+  local raw; raw="$(mktemp -t ghrepo.XXXXXXXX)" || return 1
+  if ! gh repo view "$full" --json "$GH_REPO_FIELDS" >"$raw" 2>"$err"; then
+    rm -f "$raw"; return 1
+  fi
+  gh_normalize_repo "$raw" >"$out"
+  rm -f "$raw"
+}
+
+# gh_normalize_repo RAW_FILE -> REST-shaped JSON on stdout. Pure jq, offline,
+# unit-tested. License keys map to canonical SPDX IDs so license_history does
+# not flap on GraphQL-vs-REST casing (apache-2.0 vs Apache-2.0).
+gh_normalize_repo() {
+  jq '{description: (.description // ""),
+       homepage: (.homepageUrl // ""),
+       language: (.primaryLanguage.name // ""),
+       languages: ([.languages[]? | {key: .node.name, value: .size}] | from_entries),
+       topics: ([.repositoryTopics[]?.name] // []),
+       stargazers_count: (.stargazerCount // 0),
+       forks_count: (.forkCount // 0),
+       open_issues_count: (.issues.totalCount // 0),
+       watchers_count: (.watchers.totalCount // 0),
+       network_count: (.forkCount // 0),
+       subscribers_count: (.watchers.totalCount // 0),
+       pushed_at: (.pushedAt // ""),
+       created_at: (.createdAt // ""),
+       updated_at: (.updatedAt // ""),
+       default_branch: (.defaultBranchRef.name // ""),
+       size: (.diskUsage // 0),
+       archived: (.isArchived // false),
+       is_template: (.isTemplate // false),
+       has_discussions: (.hasDiscussionsEnabled // false),
+       has_wiki: (.hasWikiEnabled // false),
+       has_pages: false,
+       has_projects: (.hasProjectsEnabled // false),
+       license: {spdx_id: (
+         (.licenseInfo.key // null) as $k |
+         if $k == null then null
+         else ({"mit":"MIT","apache-2.0":"Apache-2.0",
+                "gpl-2.0":"GPL-2.0","gpl-3.0":"GPL-3.0",
+                "agpl-3.0":"AGPL-3.0","lgpl-2.1":"LGPL-2.1","lgpl-3.0":"LGPL-3.0",
+                "mpl-2.0":"MPL-2.0","bsd-2-clause":"BSD-2-Clause",
+                "bsd-3-clause":"BSD-3-Clause","bsd-3-clause-clear":"BSD-3-Clause-Clear",
+                "isc":"ISC","unlicense":"Unlicense","cc0-1.0":"CC0-1.0",
+                "epl-1.0":"EPL-1.0","epl-2.0":"EPL-2.0",
+                "eupl-1.1":"EUPL-1.1","eupl-1.2":"EUPL-1.2",
+                "artistic-2.0":"Artistic-2.0"}[$k] // ($k | ascii_upcase))
+         end),
+         name: (.licenseInfo.name // "")},
+       visibility: ((.visibility // "") | ascii_downcase),
+       private: (.isPrivate // false)}' "$1"
+}
+
+# gh_failed_rate_limited ERRFILE -> 0 when stderr reports exhaustion.
+gh_failed_rate_limited() { grep -qi "rate limit" "$1" 2>/dev/null; }
+
+# gh_failed_not_found ERRFILE -> 0 when stderr reports a missing repo.
+gh_failed_not_found() { grep -qi "could not resolve to a repository\|not found\|404" "$1" 2>/dev/null; }
+
+# gh_repo_list_public OWNER LIMIT OUTFILE [ERRFILE] — public repos as
+# [{full_name, private}] (REST-shaped names for the existing discovery loop).
+gh_repo_list_public() {
+  local owner="$1" limit="$2" out="$3" err="${4:-/dev/null}"
+  local raw; raw="$(mktemp -t ghlist.XXXXXXXX)" || return 1
+  if ! gh repo list "$owner" --visibility public --limit "$limit" \
+      --json nameWithOwner,isPrivate >"$raw" 2>"$err"; then
+    rm -f "$raw"; return 1
+  fi
+  jq '[.[] | {full_name: .nameWithOwner, private: .isPrivate}]' "$raw" >"$out"
+  rm -f "$raw"
+}
+
+# gh_create_private TARGET NAME DESC — create a private mirror (issues on,
+# wiki off, matching the old REST flags; projects follow the gh default).
+# Auth + permission failures surface via gh stderr at the call site.
+gh_create_private() {
+  gh repo create "${1}/${2}" --private --description "$3" --disable-wiki
+}
+
+# gh_delete_repo FULL — hard delete (bulk-import rollback / confirmed cleanup).
+gh_delete_repo() { gh repo delete "$1" --yes; }
+
+# gh_set_default_branch FULL BRANCH — non-fatal at call site (warn + continue).
+gh_set_default_branch() { gh repo edit "$1" --default-branch "$2"; }
+
+# gh_open_pr OPS_REPO TITLE HEAD BODY — echoes the PR URL on success.
+gh_open_pr() {
+  gh pr create --repo "$1" --title "$2" --head "$3" --base main --body "$4"
+}
+
+# gh_open_issue OPS_REPO TITLE BODY — echoes the issue URL on success.
+gh_open_issue() {
+  gh issue create --repo "$1" --title "$2" --body "$3"
+}
+
+# gh_list_open_issues OPS_REPO OUTFILE [ERRFILE] — [{number,title}] (no PRs:
+# `gh issue list` never returns pull requests).
+gh_list_open_issues() {
+  gh issue list --repo "$1" --state open --limit 1000 --json number,title >"$2" 2>"${3:-/dev/null}"
+}
+
+# gh_list_open_prs OPS_REPO OUTFILE [ERRFILE] — [{number,title,headRefName}].
+gh_list_open_prs() {
+  gh pr list --repo "$1" --state open --limit 1000 --json number,title,headRefName >"$2" 2>"${3:-/dev/null}"
+}
+
+# gh_close_issue OPS_REPO NUMBER MSG — comment + completed-close.
+gh_close_issue() {
+  gh issue comment "$2" --repo "$1" --body "$3" && \
+  gh issue close "$2" --repo "$1" --reason completed
 }
 
 #---------------------------------------------------------------------------
@@ -245,25 +359,20 @@ git_ancestry_check() {
 #---------------------------------------------------------------------------
 
 # divergence_issue_exists OPS_REPO TITLE -> 0 when an OPEN issue with exactly
-# TITLE exists (paginates up to 10 pages of 100). Returns 1 when absent, 2 on
-# lookup error (callers fail CLOSED on 2: never mint a duplicate on an API blip).
+# TITLE exists (`gh issue list` never returns pull requests). Returns 1 when
+# absent, 2 on lookup error (callers fail CLOSED on 2: never mint a duplicate).
 divergence_issue_exists() {
   local ops_repo="$1" title="$2"
-  local page url http json found
-  for page in $(seq 1 10); do
-    json="$(mktemp -t divex.XXXXXXXX)" || return 2
-    url="https://api.github.com/repos/${ops_repo}/issues?state=open&per_page=100&page=${page}"
-    http="$(gh_api GET "$url" "$json" || echo 000)"
-    [[ "$http" == "200" ]] || { rm -f "$json"; return 2; }
-    found="$(jq -r --arg t "$title" '[.[] | select(.pull_request == null and .title == $t)] | length' "$json" 2>/dev/null || echo 0)"
-    if [[ "$found" != "0" ]]; then
-      rm -f "$json"
-      return 0
-    fi
-    [[ "$(jq 'length' "$json" 2>/dev/null || echo 0)" -lt 100 ]] && { rm -f "$json"; break; }
-    rm -f "$json"
-  done
-  return 1
+  local json; json="$(mktemp -t divex.XXXXXXXX)" || return 2
+  local err; err="$(mktemp -t divex.XXXXXXXX)" || { rm -f "$json"; return 2; }
+  if ! gh_list_open_issues "$ops_repo" "$json" "$err"; then
+    rm -f "$json" "$err"; return 2
+  fi
+  rm -f "$err"
+  local found
+  found="$(jq -r --arg t "$title" '[.[] | select(.title == $t)] | length' "$json" 2>/dev/null || echo 0)"
+  rm -f "$json"
+  [[ "$found" != "0" ]]
 }
 
 # pause_pr_exists OPS_REPO PRIVATE_FULL -> 0 when an OPEN pull with title
@@ -274,24 +383,19 @@ divergence_issue_exists() {
 # error (callers fail CLOSED on 2: never mint a duplicate branch on a blip).
 pause_pr_exists() {
   local ops_repo="$1" private="$2"
-  local page url http json found dash_re
-  dash_re="${private//\//-}"
+  local json; json="$(mktemp -t prrex.XXXXXXXX)" || return 2
+  local err; err="$(mktemp -t prrex.XXXXXXXX)" || { rm -f "$json"; return 2; }
+  if ! gh_list_open_prs "$ops_repo" "$json" "$err"; then
+    rm -f "$json" "$err"; return 2
+  fi
+  rm -f "$err"
+  local dash_re="${private//\//-}"
   dash_re="${dash_re//./\\.}"
-  for page in $(seq 1 10); do
-    json="$(mktemp -t prrex.XXXXXXXX)" || return 2
-    url="https://api.github.com/repos/${ops_repo}/pulls?state=open&per_page=100&page=${page}"
-    http="$(gh_api GET "$url" "$json" || echo 000)"
-    [[ "$http" == "200" ]] || { rm -f "$json"; return 2; }
-    found="$(jq -r --arg t "pause: $private (diverged)" --arg re "^pause/${dash_re}-[0-9]{14}$" \
-      '[.[] | select(.title == $t or ((.head.ref // "") | test($re)))] | length' "$json" 2>/dev/null || echo 0)"
-    if [[ "$found" != "0" ]]; then
-      rm -f "$json"
-      return 0
-    fi
-    [[ "$(jq 'length' "$json" 2>/dev/null || echo 0)" -lt 100 ]] && { rm -f "$json"; break; }
-    rm -f "$json"
-  done
-  return 1
+  local found
+  found="$(jq -r --arg t "pause: $private (diverged)" --arg re "^pause/${dash_re}-[0-9]{14}$" \
+    '[.[] | select(.title == $t or ((.headRefName // "") | test($re)))] | length' "$json" 2>/dev/null || echo 0)"
+  rm -f "$json"
+  [[ "$found" != "0" ]]
 }
 
 # close_divergence_issues OPS_REPO PRIVATE_FULL REASON — close every OPEN issue
@@ -302,95 +406,62 @@ pause_pr_exists() {
 close_divergence_issues() {
   local ops_repo="$1" private="$2" reason="${3:-mirror is back in sync}"
   local title="Mirror diverged: $private"
-  local page url http json nums n close_body chttp
-  for page in $(seq 1 10); do
-    json="$(mktemp -t clsdiv.XXXXXXXX)" || return 1
-    url="https://api.github.com/repos/${ops_repo}/issues?state=open&per_page=100&page=${page}"
-    http="$(gh_api GET "$url" "$json" || echo 000)"
-    # Best-effort healing: an API blip must NEVER fail the sync run under
-    # `set -e` (callers invoke this on the ok-path without `|| true`).
-    [[ "$http" == "200" ]] || { rm -f "$json"; echo "::warning::issue list unavailable (HTTP $http) — skipping auto-close"; return 0; }
-    nums="$(jq -r --arg t "$title" '.[] | select(.pull_request == null and .title == $t) | .number' "$json" 2>/dev/null || true)"
-    for n in $nums; do
-      [[ "$n" =~ ^[0-9]+$ ]] || continue
-      close_body="$(jq -nc --arg r "$reason" '{body:("Auto-closed: " + $r + " — closing stale divergence notice.")}')"
-      curl_gh -o /dev/null -w '%{http_code}' -d "$close_body" \
-        "https://api.github.com/repos/${ops_repo}/issues/${n}/comments" >/dev/null 2>&1 || true
-      chttp="$(curl_gh -o /dev/null -w '%{http_code}' -X PATCH \
-        -d '{"state":"closed","state_reason":"completed"}' \
-        "https://api.github.com/repos/${ops_repo}/issues/${n}" || echo 000)"
-      [[ "$chttp" == "200" ]] && echo "closed stale divergence issue #$n ($private)" \
-        || echo "::warning::could not close issue #$n (HTTP $chttp)"
-    done
-    [[ "$(jq 'length' "$json" 2>/dev/null || echo 0)" -lt 100 ]] && { rm -f "$json"; break; }
-    rm -f "$json"
+  local json err nums n
+  json="$(mktemp -t clsdiv.XXXXXXXX)" || return 1
+  err="$(mktemp -t clsdiv.XXXXXXXX)" || { rm -f "$json"; return 1; }
+  # Best-effort healing: a list failure must NEVER fail the sync run under
+  # `set -e` (callers invoke this on the ok-path without `|| true`).
+  if ! gh_list_open_issues "$ops_repo" "$json" "$err"; then
+    rm -f "$json" "$err"
+    echo "::warning::issue list unavailable — skipping auto-close"
+    return 0
+  fi
+  rm -f "$err"
+  nums="$(jq -r --arg t "$title" '.[] | select(.title == $t) | .number' "$json" 2>/dev/null || true)"
+  rm -f "$json"
+  for n in $nums; do
+    [[ "$n" =~ ^[0-9]+$ ]] || continue
+    if gh_close_issue "$ops_repo" "$n" "Auto-closed: $reason — closing stale divergence notice." >/dev/null 2>&1; then
+      echo "closed stale divergence issue #$n ($private)"
+    else
+      echo "::warning::could not close issue #$n"
+    fi
   done
   return 0
 }
 
-# create_private_repo TARGET_OWNER NAME UPSTREAM_FULL — create a private repo
-# under a User (POST /user/repos) or Organization (POST /orgs/{org}/repos).
-# Prints the 403 permission diagnostic on failure. Returns non-zero on failure.
+# create_private_repo TARGET_OWNER NAME UPSTREAM_FULL — create a private mirror
+# (issues on, wiki off) via `gh`. Prints the permission diagnostic on failure.
+# Returns non-zero on failure. Auth comes from GH_TOKEN env (secret store).
 create_private_repo() {
   local target_owner="$1" name="$2" upstream_full="$3"
-  local owner_json="$TMPDIR_RUN/owner.json" create_json="$TMPDIR_RUN/create.json"
-  local ohttp otype create_url desc chttp errmsg
-  ohttp="$(gh_api GET "https://api.github.com/users/${target_owner}" "$owner_json" || echo 000)"
-  [[ "$ohttp" == "200" ]] || { echo "::error::target owner lookup failed (HTTP $ohttp)"; return 1; }
-  otype="$(jq -r '.type' "$owner_json")"
-  if [[ "$otype" == "Organization" ]]; then
-    create_url="https://api.github.com/orgs/${target_owner}/repos"
-  else
-    create_url="https://api.github.com/user/repos"
+  local desc="Mirror of https://github.com/${upstream_full}"
+  local err; err="$(mktemp -t create.XXXXXXXX)" || return 1
+  if gh_create_private "$target_owner" "$name" "$desc" 2>"$err"; then
+    rm -f "$err"; return 0
   fi
-  desc="$(jq -nc --arg d "Mirror of https://github.com/${upstream_full}" --arg n "$name" \
-    '{name:$n, description:$d, private:true, has_issues:true, has_projects:false, has_wiki:false, auto_init:false}')"
-  chttp="$(curl_gh -o "$create_json" -w '%{http_code}' -X POST \
-    -d "$desc" "$create_url" || echo 000)"
-  if [[ "$chttp" != "201" ]]; then
-    errmsg="$(jq -r '.message // .' "$create_json" 2>/dev/null || true)"
-    echo "::error::create private repo failed (HTTP $chttp): $errmsg"
-    if [[ "$chttp" == "403" ]]; then
-      echo "::error::PAT cannot create a repo under '$target_owner'. For a fine-grained PAT grant:"
-      echo "  - Resources: 'All repositories' (or this owner), and"
-      echo "  - Permissions: 'Administration' read/write + 'Contents' read/write"
-      echo "  For a classic PAT, add the 'repo' scope and ensure '$target_owner' allows repo creation."
-      echo "  Confirm the PAT in the Actions secret resolved from tracker/owners.json for '$target_owner'."
-    fi
-    return 1
-  fi
-  echo "$chttp"
+  local errmsg; errmsg="$(tail -n 3 "$err" 2>/dev/null || true)"
+  rm -f "$err"
+  echo "::error::create private repo failed: $errmsg"
+  echo "::error::PAT cannot create a repo under '$target_owner'. For a fine-grained PAT grant:"
+  echo "  - Resources: 'All repositories' (or this owner), and"
+  echo "  - Permissions: 'Administration' read/write + 'Contents' read/write"
+  echo "  For a classic PAT, add the 'repo' scope and ensure '$target_owner' allows repo creation."
+  echo "  Confirm the PAT in the Actions secret resolved from tracker/owners.json for '$target_owner'."
+  return 1
 }
 
-# set_default_branch PRIVATE_FULL BRANCH — PATCH the repo's default branch.
-# Non-fatal: warns and returns non-zero if the PATCH fails.
+# set_default_branch PRIVATE_FULL BRANCH — set the default branch via `gh`.
+# Non-fatal: warns and returns non-zero if it fails.
 set_default_branch() {
-  local private_full="$1" branch="$2" http
-  http="$(curl_gh -o /dev/null -w '%{http_code}' -X PATCH \
-    -d "$(jq -nc --arg b "$branch" '{default_branch:$b}')" \
-    "https://api.github.com/repos/${private_full}" || echo 000)"
-  if [[ "$http" != "200" ]]; then
-    echo "::warning::failed to set default_branch on $private_full (HTTP $http) — verify manually"
-    return 1
+  local private_full="$1" branch="$2" err
+  err="$(mktemp -t defbr.XXXXXXXX)" || return 1
+  if gh_set_default_branch "$private_full" "$branch" 2>"$err"; then
+    rm -f "$err"; return 0
   fi
-  return 0
-}
-
-#---------------------------------------------------------------------------
-# Rate-limit helpers
-#---------------------------------------------------------------------------
-
-# rate_limit_remaining -> integer (0 if unknown / error)
-rate_limit_remaining() {
-  local tmp code
-  tmp="$(mktemp -d -t rl.XXXXXXXX)"
-  code="$(gh_api GET "https://api.github.com/rate_limit" "$tmp/rl.json" || echo 000)"
-  if [[ "$code" == "200" ]]; then
-    jq -r '.resources.core.remaining // 0' "$tmp/rl.json"
-  else
-    echo 0
-  fi
-  rm -rf "$tmp"
+  echo "::warning::failed to set default_branch on $private_full — verify manually ($(tail -n 1 "$err" 2>/dev/null || true))"
+  rm -f "$err"
+  return 1
 }
 
 #---------------------------------------------------------------------------

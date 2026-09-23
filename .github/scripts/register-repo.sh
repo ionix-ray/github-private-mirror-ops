@@ -93,32 +93,11 @@ git \
 
 git push "https://github.com/${GITHUB_REPOSITORY}.git" "$branch_name"
 
-body=$(cat <<EOF
-Auto-registered by \`new-private-fork.yml\` run.
+body="$(printf 'Auto-registered by `new-private-fork.yml` run.\n\n- Upstream: `%s`\n- Private:  `%s`\n- Branch:   `%s`\n- Intent record: `%s`\n\nAdds a single new file — cannot conflict with other registrations or the daily metadata refresh. Merge to enable daily sync (06:00 UTC); the next sync run fills in `tracker/metadata/%s.json`.' \
+  "$UPSTREAM_FULL" "$PRIVATE_FULL" "$BRANCH" "$dest" "$key")"
 
-- Upstream: \`$UPSTREAM_FULL\`
-- Private:  \`$PRIVATE_FULL\`
-- Branch:   \`$BRANCH\`
-- Intent record: \`$dest\`
-
-Adds a single new file — cannot conflict with other registrations or the daily
-metadata refresh. Merge to enable daily sync (06:00 UTC); the next sync run fills
-in \`tracker/metadata/$key.json\`.
-EOF
-)
-
-pr_body=$(jq -nc --arg t "register: $UPSTREAM_FULL" --arg h "$branch_name" --arg b "$body" \
-  '{title:$t, head:$h, base:"main", body:$b}')
-
-PR_JSON="$TMPDIR_RUN/pr.json"
-pr_http="$(curl -sS -X POST -o "$PR_JSON" -w '%{http_code}' \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  -d "$pr_body" \
-  "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls")"
-if [[ "$pr_http" != "201" ]]; then
-  echo "::warning::PR creation returned HTTP $pr_http: $(jq -r '.message // .' "$PR_JSON" 2>/dev/null || true)"
+if pr_url="$(gh_open_pr "$GITHUB_REPOSITORY" "register: $UPSTREAM_FULL" "$branch_name" "$body")"; then
+  echo "PR opened on branch $branch_name: $pr_url"
+else
+  echo "::warning::PR creation failed for $branch_name (branch is pushed; open the PR manually if needed)"
 fi
-
-echo "PR opened on branch $branch_name"
