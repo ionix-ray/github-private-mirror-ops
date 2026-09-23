@@ -3,7 +3,7 @@
 # Orchestrator for sync-mirror.sh — runs once per registry record.
 #
 #   Env: GH_TOKEN, GITHUB_REPOSITORY, TARGET_OWNER (optional filter),
-#        PAUSE_REPO, OPEN_ISSUE
+#        PAUSE_REPO, OPEN_ISSUE, HEAL_BACKLOG (one-time stale-issue heal)
 #
 # Skips paused mirrors (they stay paused until a human unpauses). After the loop,
 # regenerates the read-model so repo-status.json / REPO_STATUS.md / README.md
@@ -45,6 +45,7 @@ for rf in "${reg_files[@]}"; do
 
   if UPSTREAM_FULL="$up" PRIVATE_FULL="$pr" BRANCH="$br" \
       PAUSE_REPO="${PAUSE_REPO:-true}" OPEN_ISSUE="${OPEN_ISSUE:-true}" \
+      HEAL_BACKLOG="${HEAL_BACKLOG:-false}" \
       bash "$SCRIPT_DIR/sync-mirror.sh"; then
     synced=$((synced + 1))
   else

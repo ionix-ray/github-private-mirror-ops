@@ -358,6 +358,19 @@ git_ancestry_check() {
 # and skip creation when the same mirror already has an open item.
 #---------------------------------------------------------------------------
 
+# maybe_close_divergence OPS PRIVATE OPEN_ISSUE PREV_STATUS HEAL REASON —
+# auto-close stale divergence issues, but only when the operator left issue
+# creation enabled (OPEN_ISSUE) AND (this mirror was previously diverged OR a
+# one-time backlog heal was requested via HEAL_BACKLOG=true). Respects opt-out,
+# costs zero API calls otherwise. Pure + unit-tested.
+maybe_close_divergence() {
+  local ops_repo="$1" private="$2" open_issue="$3" prev="$4" heal="$5" reason="$6"
+  [[ "$open_issue" == "true" ]] || return 0
+  [[ "$prev" == "diverged" || "$heal" == "true" ]] || return 0
+  close_divergence_issues "$ops_repo" "$private" "$reason"
+}
+
+
 # divergence_issue_exists OPS_REPO TITLE -> 0 when an OPEN issue with exactly
 # TITLE exists (`gh issue list` never returns pull requests). Returns 1 when
 # absent, 2 on lookup error (callers fail CLOSED on 2: never mint a duplicate).
