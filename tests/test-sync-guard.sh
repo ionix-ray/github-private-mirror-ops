@@ -231,6 +231,22 @@ check "mit canonical" "MIT" "$(gh_normalize_repo "$WORK/gh-mit.json" | jq -r '.l
 jq 'del(.licenseInfo)' "$WORK/gh-shape.json" > "$WORK/gh-nolic.json"
 check "missing license null" "null" "$(gh_normalize_repo "$WORK/gh-nolic.json" | jq -r '.license.spdx_id // "null"')"
 
+echo "== 10. maybe_close_divergence gate matrix =="
+CALLED=0
+close_divergence_issues() { CALLED=1; return 0; }
+gate() { # open prev heal -> expect-called(1/0)
+  CALLED=0
+  maybe_close_divergence "o/ops" "o/p" "$1" "$2" "$3" "r" >/dev/null
+  if (( CALLED == $4 )); then note "PASS  open=$1 prev=$2 heal=$3 -> called=$4";
+  else note "FAIL  open=$1 prev=$2 heal=$3 (called=$CALLED, want $4)"; fail=1; fi
+}
+gate true diverged false 1
+gate true ok false 0
+gate true ok true 1
+gate false diverged false 0
+gate false diverged true 0
+gate true "" false 0
+
 echo ""
 if (( fail )); then echo "=== sync-guard test: FAIL ==="; exit 1; fi
 echo "=== sync-guard test: PASS ==="

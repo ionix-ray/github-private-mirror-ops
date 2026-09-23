@@ -63,13 +63,9 @@ write_status() { # status sha
 
 log(){ echo "[$UPSTREAM_FULL -> $PRIVATE_FULL] $*"; }
 
-# maybe_close REASON — auto-close stale divergence issues, but only when the
-# operator left issue creation enabled (OPEN_ISSUE) and this mirror was
-# previously diverged. Respects opt-out, costs zero API calls otherwise.
-maybe_close() {
-  [[ "$OPEN_ISSUE" == "true" && "$prev_status" == "diverged" ]] || return 0
-  close_divergence_issues "$GITHUB_REPOSITORY" "$PRIVATE_FULL" "$1"
-}
+# One-time backlog heal (manual dispatch with heal_backlog=true): close stale
+# bot issues for in-sync mirrors without waiting for a diverged->ok transition.
+HEAL_BACKLOG="${HEAL_BACKLOG:-false}"
 
 # --- Resolve SHAs (shared ls-remote helper) ---
 if ! UP_SHA="$(git_resolve_remote_sha "$UPSTREAM_FULL" "$BRANCH")"; then
@@ -91,7 +87,7 @@ log "upstream=$UP_SHA private=$PR_SHA"
 if [[ "$UP_SHA" == "$PR_SHA" ]]; then
   log "already in sync"
   write_status "ok" "$PR_SHA"
-  maybe_close "mirror $PRIVATE_FULL verified in sync ($PR_SHA)"
+  maybe_close_divergence "$GITHUB_REPOSITORY" "$PRIVATE_FULL" "$OPEN_ISSUE" "$prev_status" "$HEAL_BACKLOG" "mirror $PRIVATE_FULL verified in sync ($PR_SHA)"
   exit 0
 fi
 
@@ -102,7 +98,7 @@ ancestry="$(git_ancestry_check "$UPSTREAM_FULL" "$PRIVATE_FULL" "$UP_SHA" "$PR_S
 if [[ "$ancestry" == "equal" || "$ancestry" == "private_ahead" ]]; then
   log "private is ahead of upstream — nothing to pull"
   write_status "ok" "$PR_SHA"
-  maybe_close "mirror $PRIVATE_FULL verified in sync ($PR_SHA)"
+  maybe_close_divergence "$GITHUB_REPOSITORY" "$PRIVATE_FULL" "$OPEN_ISSUE" "$prev_status" "$HEAL_BACKLOG" "mirror $PRIVATE_FULL verified in sync ($PR_SHA)"
   exit 0
 fi
 
@@ -111,7 +107,7 @@ if [[ "$ancestry" == "upstream_ahead" ]]; then
   if git_ff_private "$UPSTREAM_FULL" "$PRIVATE_FULL" "$BRANCH" "$UP_SHA" "$TMPDIR_RUN"; then
     log "fast-forward pushed"
     write_status "ok" "$UP_SHA"
-  maybe_close "mirror $PRIVATE_FULL fast-forwarded to $UP_SHA"
+    maybe_close_divergence "$GITHUB_REPOSITORY" "$PRIVATE_FULL" "$OPEN_ISSUE" "$prev_status" "$HEAL_BACKLOG" "mirror $PRIVATE_FULL fast-forwarded to $UP_SHA"
     exit 0
   fi
   # Pure fast-forward (no --force): on refusal treat as diverged, never overwrite.

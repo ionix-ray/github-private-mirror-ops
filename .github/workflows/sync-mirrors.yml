@@ -23,6 +23,11 @@ on:
         required: false
         type: boolean
         default: true
+      heal_backlog:
+        description: 'One-time heal: close stale bot divergence issues for in-sync mirrors'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -96,6 +101,7 @@ jobs:
           TARGET_OWNER: ${{ env.TARGET_OWNER }}
           PAUSE_REPO: ${{ inputs.pause_repo || 'true' }}
           OPEN_ISSUE: ${{ inputs.open_issue || 'true' }}
+          HEAL_BACKLOG: ${{ inputs.heal_backlog || 'false' }}
         run: bash .github/scripts/sync-mirrors.sh
 
       - name: Commit and push sync results (bot-owned files only)
