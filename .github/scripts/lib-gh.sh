@@ -421,11 +421,15 @@ close_divergence_issues() {
   rm -f "$json"
   for n in $nums; do
     [[ "$n" =~ ^[0-9]+$ ]] || continue
-    if gh_close_issue "$ops_repo" "$n" "Auto-closed: $reason — closing stale divergence notice." >/dev/null 2>&1; then
+    # gh stderr carries only the API error message (never the token) — safe
+    # to surface in the warning for permission diagnosis.
+    cerr="$(mktemp -t clsdiv.XXXXXXXX)" || continue
+    if gh_close_issue "$ops_repo" "$n" "Auto-closed: $reason — closing stale divergence notice." 2>"$cerr"; then
       echo "closed stale divergence issue #$n ($private)"
     else
-      echo "::warning::could not close issue #$n"
+      echo "::warning::could not close issue #$n ($(tail -n 2 "$cerr" 2>/dev/null | tr '\n' ' '))"
     fi
+    rm -f "$cerr"
   done
   return 0
 }
