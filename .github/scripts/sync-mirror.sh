@@ -8,10 +8,11 @@
 #
 # Behaviour:
 #   * Equal SHAs            -> last_synced_status "ok"
-#   * Private ahead (FF)    -> fast-forward push upstream SHA into private
-#   * Upstream ahead (FF)   -> private already has upstream work (ok/skipped)
-#   * Diverged              -> never force-push: last_synced_status "diverged",
-#                              create a GitHub issue, and open an auto-pause PR
+#   * Private ahead         -> nothing to pull, "ok"
+#   * Upstream ahead (FF)   -> push upstream SHA onto private (pure FF, no force)
+#   * Diverged / unknown    -> never force-push: last_synced_status "diverged",
+#                              create a GitHub issue (one open per mirror max),
+#                              and open an auto-pause PR (one open per mirror max)
 #                              that sets paused=true on the intent record.
 #
 # Writes ONLY tracker/metadata/* (bot-owned) + the divergence issue/PR via API.
@@ -42,6 +43,9 @@ mkdir -p "$META_DIR"
 key="$(tracker_key "$PRIVATE_FULL")"
 mf="$META_DIR/$key.json"
 now_iso="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+# Status before this run: healing (auto-close) only fires for mirrors that were
+# previously diverged, so in-sync mirrors skip the issue-list API call entirely.
+prev_status="$(jq -r '.last_synced_status // ""' "$mf" 2>/dev/null || true)"
 
 # Shared hardening helpers (same code path as mirror-clone-push.sh).
 git_setup_auth "sync"
@@ -59,42 +63,58 @@ write_status() { # status sha
 
 log(){ echo "[$UPSTREAM_FULL -> $PRIVATE_FULL] $*"; }
 
+# maybe_close REASON — auto-close stale divergence issues, but only when the
+# operator left issue creation enabled (OPEN_ISSUE) and this mirror was
+# previously diverged. Respects opt-out, costs zero API calls otherwise.
+maybe_close() {
+  [[ "$OPEN_ISSUE" == "true" && "$prev_status" == "diverged" ]] || return 0
+  close_divergence_issues "$GITHUB_REPOSITORY" "$PRIVATE_FULL" "$1"
+}
+
 # --- Resolve SHAs (shared ls-remote helper) ---
 if ! UP_SHA="$(git_resolve_remote_sha "$UPSTREAM_FULL" "$BRANCH")"; then
   log "FAIL could not resolve upstream refs/heads/$BRANCH"
   write_status "failed" ""; exit 0
 fi
 [[ -n "$UP_SHA" ]] || { log "upstream branch $BRANCH not found"; write_status "failed" ""; exit 0; }
+is_sha "$UP_SHA" || { log "FAIL upstream SHA malformed: $UP_SHA"; write_status "failed" ""; exit 0; }
 
 if ! PR_SHA="$(git_resolve_remote_sha "$PRIVATE_FULL" "$BRANCH")"; then
   log "FAIL could not resolve private refs/heads/$BRANCH (not created yet?)"
   write_status "skipped" ""; exit 0
 fi
 [[ -n "$PR_SHA" ]] || { log "private branch $BRANCH not found (mirror not created yet)"; write_status "skipped" ""; exit 0; }
+is_sha "$PR_SHA" || { log "FAIL private SHA malformed: $PR_SHA"; write_status "failed" ""; exit 0; }
 
 log "upstream=$UP_SHA private=$PR_SHA"
 
 if [[ "$UP_SHA" == "$PR_SHA" ]]; then
   log "already in sync"
-  write_status "ok" "$PR_SHA"; exit 0
+  write_status "ok" "$PR_SHA"
+  maybe_close "mirror $PRIVATE_FULL verified in sync ($PR_SHA)"
+  exit 0
 fi
 
-# --- Check divergence with a depth-bounded fetch (shared ancestry helper) ---
+# --- Check divergence with a full-history fetch (shared ancestry helper) ---
 # If either clone failed, it reports "unknown" => conservative treatment (diverged).
 ancestry="$(git_ancestry_check "$UPSTREAM_FULL" "$PRIVATE_FULL" "$UP_SHA" "$PR_SHA" "$TMPDIR_RUN")"
 
-if [[ "$ancestry" == "private_ahead" ]]; then
+if [[ "$ancestry" == "equal" || "$ancestry" == "private_ahead" ]]; then
   log "private is ahead of upstream — nothing to pull"
-  write_status "ok" "$PR_SHA"; exit 0
+  write_status "ok" "$PR_SHA"
+  maybe_close "mirror $PRIVATE_FULL verified in sync ($PR_SHA)"
+  exit 0
 fi
 
 if [[ "$ancestry" == "upstream_ahead" ]]; then
   log "fast-forwarding private to upstream $UP_SHA"
-  if git_push_private "$PRIVATE_FULL" "$BRANCH" ff-only; then
+  if git_ff_private "$UPSTREAM_FULL" "$PRIVATE_FULL" "$BRANCH" "$UP_SHA" "$TMPDIR_RUN"; then
     log "fast-forward pushed"
-    write_status "ok" "$UP_SHA"; exit 0
+    write_status "ok" "$UP_SHA"
+  maybe_close "mirror $PRIVATE_FULL fast-forwarded to $UP_SHA"
+    exit 0
   fi
-  # --force-with-lease guards against racing writers; on failure treat as diverged
+  # Pure fast-forward (no --force): on refusal treat as diverged, never overwrite.
   log "fast-forward push refused — treating as diverged"
 fi
 
@@ -103,28 +123,36 @@ log "DIVERGED: private and upstream have diverged on $BRANCH"
 write_status "diverged" "$PR_SHA"
 
 if [[ "$OPEN_ISSUE" == "true" ]]; then
-  body=$(jq -nc \
-    --arg up "$UPSTREAM_FULL" \
-    --arg pr "$PRIVATE_FULL" \
-    --arg br "$BRANCH" \
-    --arg upsha "$UP_SHA" \
-    --arg prsha "$PR_SHA" \
-    '{title:("Mirror diverged: " + $pr),
-      body:("Private mirror `" + $pr + "` has diverged from upstream `" + $up + "` on branch `" + $br + "`.\n\n- upstream: `" + $upsha + "`\n- private:  `" + $prsha + "`\n\nFast-forward is impossible. The mirror has been auto-paused; reconcile manually (merge or rewrite) then unpause.") }')
-  issue_json="$TMPDIR_RUN/issue.json"
-  http="$(curl -sS -o "$issue_json" -w '%{http_code}' \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    -d "$body" \
-    "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues")"
-  [[ "$http" == "201" ]] \
-    && log "divergence issue created: $(jq -r '.html_url' "$issue_json")" \
-    || log "issue creation failed (HTTP $http): $(jq -r '.message // .' "$issue_json" 2>/dev/null || true)"
+  issue_title="Mirror diverged: $PRIVATE_FULL"
+  if divergence_issue_exists "$GITHUB_REPOSITORY" "$issue_title"; then
+    log "divergence issue already open for $PRIVATE_FULL — skipping (no duplicate)"
+  elif (( $? == 2 )); then
+    # Lookup error (rc=2): fail CLOSED — creating blind risks a duplicate.
+    log "::warning::issue lookup failed for $PRIVATE_FULL — skipping creation this run"
+  else
+    body="$(printf 'Private mirror `%s` has diverged from upstream `%s` on branch `%s`.\n\n- upstream: `%s`\n- private:  `%s`\n\nFast-forward is impossible. The mirror has been auto-paused; reconcile manually (merge or rewrite) then unpause.' \
+      "$PRIVATE_FULL" "$UPSTREAM_FULL" "$BRANCH" "$UP_SHA" "$PR_SHA")"
+    if issue_url="$(gh_open_issue "$GITHUB_REPOSITORY" "$issue_title" "$body")"; then
+      log "divergence issue created: $issue_url"
+    else
+      log "::warning::issue creation failed for $PRIVATE_FULL"
+    fi
+  fi
 fi
 
 if [[ "$PAUSE_REPO" == "true" ]]; then
   # Auto-pause via PR (never write tracker/registry on main directly).
+  # One open pause PR per mirror max: the cron runs daily, so check first and
+  # skip when the same mirror already has one (stops timestamped branch spam).
+  if pause_pr_exists "$GITHUB_REPOSITORY" "$PRIVATE_FULL"; then
+    log "auto-pause PR already open for $PRIVATE_FULL — skipping (no duplicate branch)"
+    exit 0
+  elif (( $? == 2 )); then
+    # Lookup error (rc=2): fail CLOSED — a timestamped branch per blip is the
+    # spam this guard exists to stop.
+    log "::warning::pause-PR lookup failed for $PRIVATE_FULL — skipping branch creation this run"
+    exit 0
+  fi
   regfile="$REG_DIR/$key.json"
   if [[ -f "$regfile" ]] && ! jq -e '.paused == true' "$regfile" >/dev/null 2>&1; then
     base_branch="${BASE_BRANCH:-main}"
@@ -144,21 +172,13 @@ if [[ "$PAUSE_REPO" == "true" ]]; then
       || { log "nothing to commit for pause"; git checkout -q "$orig_ref" 2>/dev/null || true; exit 0; }
     git push "https://github.com/${GITHUB_REPOSITORY}.git" "$branch_name" >/dev/null 2>&1
 
-    pr_body=$(jq -nc \
-      --arg t "pause: $PRIVATE_FULL (diverged)" \
-      --arg h "$branch_name" \
-      --arg b "Auto-paused by \`sync-mirror.yml\`: \`$PRIVATE_FULL\` diverged from \`$UPSTREAM_FULL\` on branch \`$BRANCH\`. Reconcile manually, then set \`paused\` back to \`false\`." \
-      '{title:$t, head:$h, base:"main", body:$b}')
-    pause_json="$TMPDIR_RUN/pause.json"
-    http="$(curl -sS -o "$pause_json" -w '%{http_code}' \
-      -H "Accept: application/vnd.github+json" \
-      -H "Authorization: Bearer ${GH_TOKEN}" \
-      -H "X-GitHub-Api-Version: 2022-11-28" \
-      -d "$pr_body" \
-      "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls")"
-    [[ "$http" == "201" ]] \
-      && log "auto-pause PR opened: $(jq -r '.html_url' "$pause_json")" \
-      || log "auto-pause PR creation failed (HTTP $http)"
+    pr_body="$(printf 'Auto-paused by `sync-mirror.yml`: `%s` diverged from `%s` on branch `%s`. Reconcile manually, then set `paused` back to `false`.' \
+      "$PRIVATE_FULL" "$UPSTREAM_FULL" "$BRANCH")"
+    if pr_url="$(gh_open_pr "$GITHUB_REPOSITORY" "pause: $PRIVATE_FULL (diverged)" "$branch_name" "$pr_body")"; then
+      log "auto-pause PR opened: $pr_url"
+    else
+      log "::warning::auto-pause PR creation failed for $PRIVATE_FULL"
+    fi
 
     # CRITICAL: return to the original branch so the caller (sync-mirrors.yml
     # main push) cannot pick up the pause/* registry edit. commit-bot-changes.sh

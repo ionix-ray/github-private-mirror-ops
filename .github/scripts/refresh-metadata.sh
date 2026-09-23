@@ -17,6 +17,8 @@ FULL_REFRESH="${FULL_REFRESH:-false}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-tracker.sh"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-gh.sh"
 
 mkdir -p "$META_DIR"
 
@@ -27,22 +29,8 @@ TMPDIR_RUN="$(mktemp -d -t refresh.XXXXXXXX)"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 chmod 0700 "$TMPDIR_RUN"
 U_JSON="$TMPDIR_RUN/up.json"
+U_ERR="$TMPDIR_RUN/up.err"
 L_JSON="$TMPDIR_RUN/lang.json"
-RL_JSON="$TMPDIR_RUN/rl.json"
-
-# --- Rate limit sanity check ---
-rl=$(curl -sS -o "$RL_JSON" -w '%{http_code}' \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/rate_limit" || echo 000)
-if [[ "$rl" == "200" ]]; then
-  remaining=$(jq -r '.resources.core.remaining // 0' "$RL_JSON")
-  if (( remaining < 100 )); then
-    echo "::warning::rate limit low ($remaining remaining) — skipping metadata refresh"
-    exit 0
-  fi
-fi
 
 now_iso="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 updated=0
@@ -67,34 +55,25 @@ for rf in "${reg_files[@]}"; do
     fi
   fi
 
-  uh=$(curl -sS -o "$U_JSON" -w '%{http_code}' \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/${up}" 2>/dev/null || echo "000")
-
-  if [[ "$uh" == "403" ]]; then
-    msg=$(jq -r '.message // ""' "$U_JSON" 2>/dev/null || true)
-    [[ "$msg" == *"rate limit"* ]] && { echo "::error::GitHub rate limit hit — aborting"; exit 1; }
-  fi
-  if [[ "$uh" == "404" || "$uh" == "451" ]]; then
-    echo "::notice::upstream $up not reachable (HTTP $uh) — marking deleted"
-    { [[ -f "$mf" ]] && cat "$mf" || jq -nc --arg up "$up" --arg pr "$pr" '{upstream:$up,private:$pr}'; } \
-      | jq --arg ts "$now_iso" '.upstream_state="deleted" | .refreshed_at=$ts' \
-      | write_json_stable "$mf"
-    continue
-  fi
-  if [[ "$uh" != "200" ]]; then
-    echo "::warning::metadata fetch for $up failed (HTTP $uh)"; continue
+  # Repo snapshot via `gh` (normalized to the REST shape U_JSON expects).
+  # Failure classes mirror the old HTTP handling: unresolvable -> deleted,
+  # rate exhaustion -> abort, anything else -> warn + skip this repo.
+  if ! gh_repo_json "$up" "$U_JSON" "$U_ERR"; then
+    if gh_failed_rate_limited "$U_ERR"; then
+      echo "::error::GitHub rate limit hit — aborting"; exit 1
+    fi
+    if gh_failed_not_found "$U_ERR"; then
+      echo "::notice::upstream $up not reachable — marking deleted"
+      { [[ -f "$mf" ]] && cat "$mf" || jq -nc --arg up "$up" --arg pr "$pr" '{upstream:$up,private:$pr}'; } \
+        | jq --arg ts "$now_iso" '.upstream_state="deleted" | .refreshed_at=$ts' \
+        | write_json_stable "$mf"
+      continue
+    fi
+    echo "::warning::metadata fetch for $up failed ($(tail -n 1 "$U_ERR" 2>/dev/null || true))"; continue
   fi
 
-  # Languages
-  lh=$(curl -sS -o "$L_JSON" -w '%{http_code}' \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/${up}/languages" 2>/dev/null || echo "000")
-  [[ "$lh" == "200" ]] || echo '{}' > "$L_JSON"
+  # Languages ride along inside the normalized snapshot (no second call).
+  jq '.languages // {}' "$U_JSON" > "$L_JSON"
 
   # Preserve prior metadata (license_history, sync fields) if present.
   prev="$TMPDIR_RUN/prev.json"

@@ -15,6 +15,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-tracker.sh"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-gh.sh"
 
 mkdir -p "$META_DIR"
 mapfile -t reg_files < <(list_registry_files)
@@ -24,18 +26,9 @@ TMPDIR_RUN="$(mktemp -d -t cleanup.XXXXXXXX)"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 chmod 0700 "$TMPDIR_RUN"
 U_JSON="$TMPDIR_RUN/up.json"
+U_ERR="$TMPDIR_RUN/up.err"
 P_JSON="$TMPDIR_RUN/pr.json"
-RL_JSON="$TMPDIR_RUN/rl.json"
-
-rl=$(curl -sS -o "$RL_JSON" -w '%{http_code}' \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/rate_limit" || echo 000)
-if [[ "$rl" == "200" ]]; then
-  remaining=$(jq -r '.resources.core.remaining // 0' "$RL_JSON")
-  (( remaining < 50 )) && { echo "::warning::rate limit low ($remaining) — skipping cleanup"; exit 0; }
-fi
+P_ERR="$TMPDIR_RUN/pr.err"
 
 now_iso="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 marked=0
@@ -54,30 +47,26 @@ for rf in "${reg_files[@]}"; do
   key="$(tracker_key "$pr")"
   is_full_repo "$up" && is_full_repo "$pr" || { echo "::warning::malformed record $(basename "$rf") — skip"; continue; }
 
-  uh=$(curl -sS -o "$U_JSON" -w '%{http_code}' -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/${up}" 2>/dev/null || echo 000)
-  ph=$(curl -sS -o "$P_JSON" -w '%{http_code}' -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/${pr}" 2>/dev/null || echo 000)
+  up_ok=0; pr_ok=0
+  if gh_repo_json "$up" "$U_JSON" "$U_ERR"; then up_ok=1; fi
+  if gh_repo_json "$pr" "$P_JSON" "$P_ERR"; then pr_ok=1; fi
 
-  if [[ "$uh" == "403" || "$ph" == "403" ]]; then
-    msg=$(jq -r '.message // ""' "$U_JSON" 2>/dev/null || true)
-    [[ "$msg" == *"rate limit"* ]] && { echo "::error::rate limit hit — aborting cleanup"; exit 1; }
+  if (( up_ok == 0 )) && gh_failed_rate_limited "$U_ERR"; then
+    echo "::error::rate limit hit — aborting cleanup"; exit 1
   fi
 
-  if [[ "$uh" == "404" || "$uh" == "451" ]]; then
+  if (( up_ok == 0 )) && gh_failed_not_found "$U_ERR"; then
     set_state "$key" deleted "$up" "$pr"; marked=$((marked+1))
-    echo "::notice::$up upstream deleted (HTTP $uh) — marked deleted"; continue
+    echo "::notice::$up upstream deleted — marked deleted"; continue
   fi
-  if [[ "$ph" == "404" || "$ph" == "451" ]]; then
+  if (( pr_ok == 0 )) && gh_failed_not_found "$P_ERR"; then
     set_state "$key" deleted "$up" "$pr"; marked=$((marked+1))
-    echo "::notice::$pr private deleted (HTTP $ph) — marked deleted"; continue
+    echo "::notice::$pr private deleted — marked deleted"; continue
   fi
-  if [[ "$uh" == "000" && "$ph" == "000" ]]; then
-    echo "::warning::network failure checking $up / $pr — skip"; continue
+  if (( up_ok == 0 && pr_ok == 0 )); then
+    echo "::warning::lookup failed for $up / $pr ($(tail -n 1 "$U_ERR" 2>/dev/null || true)) — skip"; continue
   fi
-  if [[ "$uh" == "200" ]]; then
+  if (( up_ok == 1 )); then
     arch=$(jq -r '.archived // false' "$U_JSON")
     [[ "$arch" == "true" ]] && { set_state "$key" archived "$up" "$pr"; echo "::notice::$up archived"; }
   fi

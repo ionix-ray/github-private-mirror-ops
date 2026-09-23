@@ -103,23 +103,28 @@ offline_rc=$?
 if [[ "$LIVE" != "--live" ]]; then exit 0; fi
 : "${GH_TOKEN:?live mode requires GH_TOKEN}"
 
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-gh.sh"
+
 TMPDIR_RUN="$(mktemp -d -t validate.XXXXXXXX)"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
-U_JSON="$TMPDIR_RUN/u.json"; P_JSON="$TMPDIR_RUN/p.json"
+U_JSON="$TMPDIR_RUN/u.json"; U_ERR="$TMPDIR_RUN/u.err"
+P_JSON="$TMPDIR_RUN/p.json"; P_ERR="$TMPDIR_RUN/p.err"
 critical=0; warn=0
 while IFS= read -r rf; do
   [[ -z "$rf" ]] && continue
   up=$(jq -r '.upstream' "$rf"); pr=$(jq -r '.private' "$rf")
   is_full_repo "$up" && is_full_repo "$pr" || { echo "::error::CRITICAL: malformed $(basename "$rf")"; critical=$((critical+1)); continue; }
-  uh=$(curl -sS -o "$U_JSON" -w '%{http_code}' -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/${up}")
-  [[ "$uh" == "200" ]] || { echo "::error::CRITICAL: upstream $up unreachable (HTTP $uh)"; critical=$((critical+1)); continue; }
-  ph=$(curl -sS -o "$P_JSON" -w '%{http_code}' -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/${pr}")
-  [[ "$ph" == "200" ]] || { echo "::error::CRITICAL: private $pr unreachable (HTTP $ph)"; critical=$((critical+1)); continue; }
-  vis=$(jq -r '.visibility // (.private | if . then "private" else "public" end)' "$P_JSON")
+  # Reachability is pure git (no API); fields come from `gh`.
+  git ls-remote --quiet "https://github.com/${up}.git" HEAD >/dev/null 2>&1 \
+    || { echo "::error::CRITICAL: upstream $up unreachable (ls-remote failed)"; critical=$((critical+1)); continue; }
+  git ls-remote --quiet "https://github.com/${pr}.git" HEAD >/dev/null 2>&1 \
+    || { echo "::error::CRITICAL: private $pr unreachable (ls-remote failed)"; critical=$((critical+1)); continue; }
+  gh_repo_json "$up" "$U_JSON" "$U_ERR" >/dev/null 2>&1 \
+    || { echo "::error::CRITICAL: upstream $up metadata lookup failed"; critical=$((critical+1)); continue; }
+  gh_repo_json "$pr" "$P_JSON" "$P_ERR" >/dev/null 2>&1 \
+    || { echo "::error::CRITICAL: private $pr metadata lookup failed"; critical=$((critical+1)); continue; }
+  vis=$(jq -r '.visibility // "unknown"' "$P_JSON")
   [[ "$vis" == "private" ]] || { echo "::error::CRITICAL: $pr visibility=$vis — must be private"; critical=$((critical+1)); }
   [[ "$(jq -r '.archived' "$U_JSON")" == "true" ]] && { echo "::warning::WARN: upstream $up archived"; warn=$((warn+1)); }
 done < <(list_registry_files)

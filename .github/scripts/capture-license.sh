@@ -15,6 +15,8 @@ UPSTREAM="${1:?upstream owner/repo required}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-tracker.sh"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-gh.sh"
 
 is_full_repo "$UPSTREAM" || { echo "::error::capture-license: bad upstream: $UPSTREAM"; exit 1; }
 
@@ -40,13 +42,11 @@ TMPDIR_RUN="$(mktemp -d -t caplic.XXXXXXXX)"
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 chmod 0700 "$TMPDIR_RUN"
 LIC_JSON="$TMPDIR_RUN/lic.json"
+LIC_ERR="$TMPDIR_RUN/lic.err"
 
-http=$(curl -sS -o "$LIC_JSON" -w '%{http_code}' \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/repos/${UPSTREAM}" || echo 000)
-[[ "$http" == "200" ]] || { echo "::warning::license capture: upstream lookup failed (HTTP $http)"; exit 0; }
+if ! gh_repo_json "$UPSTREAM" "$LIC_JSON" "$LIC_ERR"; then
+  echo "::warning::license capture: upstream lookup failed ($(tail -n 1 "$LIC_ERR" 2>/dev/null || true))"; exit 0
+fi
 
 spdx=$(jq -r '.license.spdx_id // "NOASSERTION"' "$LIC_JSON")
 name=$(jq -r '.license.name // ""'               "$LIC_JSON")

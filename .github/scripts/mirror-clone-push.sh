@@ -6,6 +6,8 @@
 # Composes over the shared primitives in lib-gh.sh (git_setup_auth,
 # parse_github_url, git_clone_upstream, create_private_repo, git_push_private,
 # set_default_branch) so create and sync use the SAME code path.
+# Reachability checks use plain `git ls-remote`; repo reads/creates go through
+# `gh` (token from GH_TOKEN env, never handled or printed here).
 #
 # Idempotent: if private repo already exists, aborts with clear error (no overwrite).
 # Cleans up the empty private repo if the push step fails.
@@ -19,6 +21,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-gh.sh"
+
+require_gh_token || exit 1
 
 # --- Hardening helpers (shared, from lib-gh.sh) ---
 git_setup_auth "mirror"
@@ -36,12 +40,16 @@ fi
 
 # --- Fetch upstream metadata (must be public + not archived) ---
 UP_JSON="$TMPDIR_RUN/up.json"
-http="$(gh_api GET "https://api.github.com/repos/${UPSTREAM_FULL}" "$UP_JSON")"
-if [[ "$http" != "200" ]]; then
-  echo "::error::upstream '$UPSTREAM_FULL' not reachable (HTTP $http)"
+UP_ERR="$TMPDIR_RUN/up.err"
+if ! gh_repo_json "$UPSTREAM_FULL" "$UP_JSON" "$UP_ERR"; then
+  if gh_failed_not_found "$UP_ERR"; then
+    echo "::error::upstream '$UPSTREAM_FULL' not reachable (not found or private)"
+  else
+    echo "::error::upstream '$UPSTREAM_FULL' lookup failed ($(tail -n 1 "$UP_ERR" 2>/dev/null || true))"
+  fi
   exit 1
 fi
-visibility=$(jq -r '.visibility // (.private | if . then "private" else "public" end)' "$UP_JSON")
+visibility=$(jq -r '.visibility // "unknown"' "$UP_JSON")
 if [[ "$visibility" != "public" ]]; then
   echo "::error::upstream '$UPSTREAM_FULL' is not public (visibility=$visibility)"
   exit 1
@@ -69,10 +77,9 @@ else
     echo "::error::branch input contains unsupported characters: $BRANCH_INPUT"
     exit 1
   fi
-  # confirm branch exists on upstream
-  bhttp="$(gh_api GET "https://api.github.com/repos/${UPSTREAM_FULL}/branches/${BRANCH_INPUT}" /dev/null)"
-  if [[ "$bhttp" != "200" ]]; then
-    echo "::error::branch '$BRANCH_INPUT' not found on $UPSTREAM_FULL (HTTP $bhttp)"
+  # confirm branch exists on upstream (pure git, no API)
+  if ! git ls-remote --quiet "https://github.com/${UPSTREAM_FULL}.git" "refs/heads/${BRANCH_INPUT}" 2>/dev/null | grep -q .; then
+    echo "::error::branch '$BRANCH_INPUT' not found on $UPSTREAM_FULL"
     exit 1
   fi
   BRANCH="$BRANCH_INPUT"
@@ -87,9 +94,8 @@ if [[ ! "$PRIVATE_NAME" =~ ^[A-Za-z0-9._-]+$ ]]; then
 fi
 PRIVATE_FULL="${TARGET_OWNER}/${PRIVATE_NAME}"
 
-# --- Idempotency: refuse to overwrite an existing repo ---
-existing_http="$(gh_api GET "https://api.github.com/repos/${PRIVATE_FULL}" /dev/null)"
-if [[ "$existing_http" == "200" ]]; then
+# --- Idempotency: refuse to overwrite an existing repo (pure git probe) ---
+if git ls-remote --quiet "https://github.com/${PRIVATE_FULL}.git" 2>/dev/null | grep -q .; then
   echo "::error::private repo '$PRIVATE_FULL' already exists — refusing to overwrite. Pick a different private_name or delete it first."
   exit 1
 fi
@@ -112,9 +118,8 @@ else
 fi
 if ! git_push_private "$PRIVATE_FULL" "$BRANCH" "$push_mode"; then
   echo "::error::push failed — rolling back created private repo"
-  rb_http="$(gh_api DELETE "https://api.github.com/repos/${PRIVATE_FULL}" /dev/null)"
-  if [[ "$rb_http" != "204" ]]; then
-    echo "::warning::rollback DELETE returned HTTP $rb_http — orphan repo may remain at $PRIVATE_FULL"
+  if ! gh_delete_repo "$PRIVATE_FULL" 2>/dev/null; then
+    echo "::warning::rollback delete failed — orphan repo may remain at $PRIVATE_FULL"
   fi
   exit 1
 fi
