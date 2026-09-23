@@ -182,9 +182,11 @@ gh_list_open_prs() {
   gh pr list --repo "$1" --state open --limit 1000 --json number,title,headRefName >"$2" 2>"${3:-/dev/null}"
 }
 
-# gh_close_issue OPS_REPO NUMBER MSG — comment + completed-close.
+# gh_close_issue OPS_REPO NUMBER MSG — comment + completed-close. The comment is
+# best-effort (a token may lack comment scope yet retain close scope); the
+# close carries the return code so callers report the meaningful outcome.
 gh_close_issue() {
-  gh issue comment "$2" --repo "$1" --body "$3" && \
+  gh issue comment "$2" --repo "$1" --body "$3" 2>/dev/null || true
   gh issue close "$2" --repo "$1" --reason completed
 }
 
