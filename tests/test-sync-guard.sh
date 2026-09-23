@@ -165,6 +165,21 @@ if grep -q " 13" "$WORK/calls"; then
 else
   note "PASS  unrelated issue #13 untouched"
 fi
+gh() { # list ok, mutations fail: warning surfaces, overall rc stays 0
+  case "$1 $2" in
+    "issue list")
+      printf '%s' '[{"number":11,"title":"Mirror diverged: ionix-ray/wgpu"}]' ;;
+    *) echo "GraphQL: Resource not accessible by personal access token." >&2; return 1 ;;
+  esac
+  return 0
+}
+out="$(close_divergence_issues "o/ops" "ionix-ray/wgpu" "test reason" 2>&1)"; rc=$?
+if (( rc == 0 )) && grep -q "could not close issue #11" <<<"$out" \
+  && grep -q "Resource not accessible" <<<"$out"; then
+  note "PASS  close failure warns (with reason) without failing sync"
+else
+  note "FAIL  close-failure path (rc=$rc)"; fail=1
+fi
 
 echo "== 8. anchored head match: siblings do not collide; errors fail closed =="
 gh() { # one pause PR for cli-foo only (head shape + title)
