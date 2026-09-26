@@ -20,7 +20,7 @@
     "Rust": 6090579,
     "Shell": 17177
   },
-  "last_synced_at": "2026-09-26T11:05:15Z",
+  "last_synced_at": "2026-09-26T15:48:16Z",
   "last_synced_sha": "e9c25a42586aba7f513de65b020fc6360fac7c67",
   "last_synced_status": "ok",
   "last_upstream_sha": "e9c25a42586aba7f513de65b020fc6360fac7c67",
@@ -31,7 +31,7 @@
   "network_count": 3036,
   "open_issues_count": 1168,
   "private": "ionix-ray/qiskit",
-  "refreshed_at": "2026-09-26T11:05:15Z",
+  "refreshed_at": "2026-09-26T15:48:16Z",
   "stargazers_count": 7795,
   "subscribers_count": 232,
   "topics": [
