@@ -106,7 +106,7 @@ if [[ "$LIVE" != "--live" ]]; then exit 0; fi
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-gh.sh"
 
-TMPDIR_RUN="$(mktemp -d -t validate.XXXXXXXX)"
+TMPDIR_RUN="$(make_tmpdir validate)" || exit 1
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
 U_JSON="$TMPDIR_RUN/u.json"; U_ERR="$TMPDIR_RUN/u.err"
 P_JSON="$TMPDIR_RUN/p.json"; P_ERR="$TMPDIR_RUN/p.err"

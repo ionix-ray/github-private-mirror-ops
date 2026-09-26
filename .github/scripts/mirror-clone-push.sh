@@ -57,8 +57,9 @@ fi
 default_branch=$(jq -r '.default_branch' "$UP_JSON")
 upstream_size_kb=$(jq -r '.size // 0' "$UP_JSON")
 
-# Refuse repos > 5 GB to keep runner safe
-if (( upstream_size_kb > 5 * 1024 * 1024 )); then
+# Refuse repos over the runner safety cap (default 5 GB) to keep runners safe.
+# MAX_CLONE_KB overrides the cap without code changes.
+if (( upstream_size_kb > ${MAX_CLONE_KB:-5242880} )); then
   echo "::error::upstream is ${upstream_size_kb} KB — exceeds 5GB runner safety cap"
   exit 1
 fi

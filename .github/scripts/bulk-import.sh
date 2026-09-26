@@ -45,9 +45,8 @@ if ! [[ "$MAX_REPOS" =~ ^[0-9]+$ ]] || (( MAX_REPOS > 200 )); then
   exit 1
 fi
 
-TMPDIR_RUN="$(mktemp -d -t bulk.XXXXXXXX)"
+TMPDIR_RUN="$(make_tmpdir bulk)" || exit 1
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
-chmod 0700 "$TMPDIR_RUN"
 
 # --- Discover public repos (one `gh` call, capped by MAX_REPOS) ---
 # No explicit rate-limit precheck: `gh` surfaces exhaustion clearly, the run is

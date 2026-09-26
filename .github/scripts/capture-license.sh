@@ -38,9 +38,8 @@ key="$(tracker_key "$priv")"
 mf="$META_DIR/$key.json"
 mkdir -p "$META_DIR"
 
-TMPDIR_RUN="$(mktemp -d -t caplic.XXXXXXXX)"
+TMPDIR_RUN="$(make_tmpdir caplic)" || exit 1
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
-chmod 0700 "$TMPDIR_RUN"
 LIC_JSON="$TMPDIR_RUN/lic.json"
 LIC_ERR="$TMPDIR_RUN/lic.err"
 

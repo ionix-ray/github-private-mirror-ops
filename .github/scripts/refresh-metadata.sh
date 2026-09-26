@@ -25,9 +25,8 @@ mkdir -p "$META_DIR"
 mapfile -t reg_files < <(list_registry_files)
 (( ${#reg_files[@]} == 0 )) && { echo "no intent records — skip"; exit 0; }
 
-TMPDIR_RUN="$(mktemp -d -t refresh.XXXXXXXX)"
+TMPDIR_RUN="$(make_tmpdir refresh)" || exit 1
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
-chmod 0700 "$TMPDIR_RUN"
 U_JSON="$TMPDIR_RUN/up.json"
 U_ERR="$TMPDIR_RUN/up.err"
 L_JSON="$TMPDIR_RUN/lang.json"
@@ -45,13 +44,13 @@ for rf in "${reg_files[@]}"; do
     echo "::warning::malformed upstream '$up' in $(basename "$rf") — skip"; continue
   fi
 
-  # Skip if recently refreshed (unless FULL_REFRESH)
+  # Skip if recently refreshed (default TTL 6h via REFRESH_TTL_S, unless FULL_REFRESH)
   if [[ "$FULL_REFRESH" != "true" && -f "$mf" ]]; then
     last=$(jq -r '.refreshed_at // ""' "$mf")
     if [[ -n "$last" ]]; then
       last_epoch=$(date -d "$last" +%s 2>/dev/null || echo 0)
       now_epoch=$(date +%s)
-      (( now_epoch - last_epoch < 21600 )) && continue
+      (( now_epoch - last_epoch < ${REFRESH_TTL_S:-21600} )) && continue
     fi
   fi
 
