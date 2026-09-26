@@ -61,6 +61,27 @@ require_gh_token() {
   [[ -n "${GH_TOKEN:-}" ]] || { echo "::error::GH_TOKEN is empty or missing (must come from the Actions secret store)"; return 1; }
 }
 
+# make_tmpdir TAG — one mktemp idiom for every script (0700, path on stdout).
+# Callers keep their own EXIT trap; this only standardizes creation.
+make_tmpdir() {
+  local dir; dir="$(mktemp -d -t "${1:?tag required}.XXXXXXXX")" || return 1
+  chmod 0700 "$dir"
+  printf '%s\n' "$dir"
+}
+
+# gh_retry CMD... — run a READ-ONLY gh fetch up to GH_RETRIES with backoff.
+# Mutations (create/delete/close/push) are deliberately single-shot: retrying
+# a possibly-applied write risks duplicates. Reads are idempotent, retry them.
+gh_retry() {
+  local attempts="${GH_RETRIES:-3}" i=1 delay=2
+  while true; do
+    if "$@"; then return 0; fi
+    (( i >= attempts )) && return 1
+    sleep "$delay"
+    i=$((i + 1)); delay=$((delay * 2))
+  done
+}
+
 #---------------------------------------------------------------------------
 # GitHub access — everything goes through `gh` (auth from GH_TOKEN env) or
 # plain `git`. No raw REST, no curl, no token plumbing in scripts.
@@ -75,10 +96,13 @@ GH_REPO_FIELDS="nameWithOwner,description,homepageUrl,primaryLanguage,languages,
 # Normalizes the gh (GraphQL) shape to the REST shape downstream jq already
 # expects, so callers keep their field names. Keys without a gh equivalent
 # (has_pages) default; network/subscriber counts map to their closest counter.
+# List page size for `gh issue/pr list` (env-overridable).
+GH_LIST_LIMIT="${GH_LIST_LIMIT:-1000}"
+
 gh_repo_json() {
   local full="$1" out="$2" err="${3:-/dev/null}"
   local raw; raw="$(mktemp -t ghrepo.XXXXXXXX)" || return 1
-  if ! gh repo view "$full" --json "$GH_REPO_FIELDS" >"$raw" 2>"$err"; then
+  if ! gh_retry gh repo view "$full" --json "$GH_REPO_FIELDS" >"$raw" 2>"$err"; then
     rm -f "$raw"; return 1
   fi
   gh_normalize_repo "$raw" >"$out"
@@ -140,7 +164,7 @@ gh_failed_not_found() { grep -qi "could not resolve to a repository\|not found\|
 gh_repo_list_public() {
   local owner="$1" limit="$2" out="$3" err="${4:-/dev/null}"
   local raw; raw="$(mktemp -t ghlist.XXXXXXXX)" || return 1
-  if ! gh repo list "$owner" --visibility public --limit "$limit" \
+  if ! gh_retry gh repo list "$owner" --visibility public --limit "$limit" \
       --json nameWithOwner,isPrivate >"$raw" 2>"$err"; then
     rm -f "$raw"; return 1
   fi
@@ -174,12 +198,27 @@ gh_open_issue() {
 # gh_list_open_issues OPS_REPO OUTFILE [ERRFILE] — [{number,title}] (no PRs:
 # `gh issue list` never returns pull requests).
 gh_list_open_issues() {
-  gh issue list --repo "$1" --state open --limit 1000 --json number,title >"$2" 2>"${3:-/dev/null}"
+  gh_retry gh issue list --repo "$1" --state open --limit "$GH_LIST_LIMIT" --json number,title >"$2" 2>"${3:-/dev/null}"
 }
 
 # gh_list_open_prs OPS_REPO OUTFILE [ERRFILE] — [{number,title,headRefName}].
 gh_list_open_prs() {
-  gh pr list --repo "$1" --state open --limit 1000 --json number,title,headRefName >"$2" 2>"${3:-/dev/null}"
+  gh_retry gh pr list --repo "$1" --state open --limit "$GH_LIST_LIMIT" --json number,title,headRefName >"$2" 2>"${3:-/dev/null}"
+}
+
+# prefetch_list issues|prs OPS_REPO JSON ERRFILE -> 0 with the list ready.
+# Honors hoisted run snapshots (GH_ISSUES_FILE/GH_PRS_FILE, fetched once per
+# run by the orchestrator): per-mirror titles make mid-run staleness harmless.
+prefetch_list() {
+  local kind="$1" ops="$2" json="$3" err="$4" hoist=""
+  case "$kind" in
+    issues) hoist="${GH_ISSUES_FILE:-}" ;;
+    prs)    hoist="${GH_PRS_FILE:-}" ;;
+    *) echo "::error::prefetch_list: bad kind '$kind'"; return 2 ;;
+  esac
+  if [[ -n "$hoist" && -f "$hoist" ]]; then cp "$hoist" "$json"; return 0; fi
+  if [[ "$kind" == "issues" ]]; then gh_list_open_issues "$ops" "$json" "$err";
+  else gh_list_open_prs "$ops" "$json" "$err"; fi
 }
 
 # gh_close_issue OPS_REPO NUMBER MSG — comment + completed-close. The comment is
@@ -380,7 +419,7 @@ divergence_issue_exists() {
   local ops_repo="$1" title="$2"
   local json; json="$(mktemp -t divex.XXXXXXXX)" || return 2
   local err; err="$(mktemp -t divex.XXXXXXXX)" || { rm -f "$json"; return 2; }
-  if ! gh_list_open_issues "$ops_repo" "$json" "$err"; then
+  if ! prefetch_list issues "$ops_repo" "$json" "$err"; then
     rm -f "$json" "$err"; return 2
   fi
   rm -f "$err"
@@ -400,7 +439,7 @@ pause_pr_exists() {
   local ops_repo="$1" private="$2"
   local json; json="$(mktemp -t prrex.XXXXXXXX)" || return 2
   local err; err="$(mktemp -t prrex.XXXXXXXX)" || { rm -f "$json"; return 2; }
-  if ! gh_list_open_prs "$ops_repo" "$json" "$err"; then
+  if ! prefetch_list prs "$ops_repo" "$json" "$err"; then
     rm -f "$json" "$err"; return 2
   fi
   rm -f "$err"
@@ -426,7 +465,7 @@ close_divergence_issues() {
   err="$(mktemp -t clsdiv.XXXXXXXX)" || { rm -f "$json"; return 1; }
   # Best-effort healing: a list failure must NEVER fail the sync run under
   # `set -e` (callers invoke this on the ok-path without `|| true`).
-  if ! gh_list_open_issues "$ops_repo" "$json" "$err"; then
+  if ! prefetch_list issues "$ops_repo" "$json" "$err"; then
     rm -f "$json" "$err"
     echo "::warning::issue list unavailable — skipping auto-close"
     return 0

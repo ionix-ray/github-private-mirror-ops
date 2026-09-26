@@ -163,7 +163,7 @@ if [[ "$PAUSE_REPO" == "true" ]]; then
 
     jq '.paused=true | .pause_reason="diverged from upstream (auto-paused by sync-mirror)"' "$regfile" | write_json_stable "$regfile"
     git add "$regfile"
-    git -c user.email="bot@dpost.me" -c user.name="git-private-repo-manager" \
+    git -c "user.email=${GIT_AUTHOR_EMAIL:-bot@dpost.me}" -c "user.name=${GIT_AUTHOR_NAME:-git-private-repo-manager}" \
       commit -m "pause: $PRIVATE_FULL diverged from upstream" >/dev/null 2>&1 \
       || { log "nothing to commit for pause"; git checkout -q "$orig_ref" 2>/dev/null || true; exit 0; }
     git push "https://github.com/${GITHUB_REPOSITORY}.git" "$branch_name" >/dev/null 2>&1

@@ -247,6 +247,31 @@ gate false diverged false 0
 gate false diverged true 0
 gate true "" false 0
 
+echo "== 11. gh_retry, make_tmpdir, hoisted snapshots =="
+d="$(make_tmpdir retrytest)"
+if [[ -d "$d" ]] && [[ "$(stat -f %A "$d" 2>/dev/null || stat -c %a "$d")" == "700" ]]; then
+  note "PASS  make_tmpdir creates 0700 dir"
+else
+  note "FAIL  make_tmpdir"; fail=1
+fi
+rm -rf "$d"
+FLAKY_N=0
+flaky() { FLAKY_N=$((FLAKY_N + 1)); (( FLAKY_N >= 3 )); }
+GH_RETRIES=4
+if gh_retry flaky; then note "PASS  retry succeeds after flakes"; else note "FAIL  retry gave up early"; fail=1; fi
+GH_RETRIES=2
+if gh_retry false; then note "FAIL  retry claimed success"; fail=1; else note "PASS  retry exhausts and fails"; fi
+unset GH_RETRIES
+printf '%s' '[{"number":31,"title":"Mirror diverged: ionix-ray/hoisted"}]' > "$WORK/snap.json"
+export GH_ISSUES_FILE="$WORK/snap.json"
+gh() { echo "LIST CALLED (must use snapshot)" >&2; return 1; }
+if divergence_issue_exists "o/ops" "Mirror diverged: ionix-ray/hoisted"; then
+  note "PASS  hoisted snapshot used, no live call"
+else
+  note "FAIL  hoisted snapshot missed"; fail=1
+fi
+unset GH_ISSUES_FILE
+
 echo ""
 if (( fail )); then echo "=== sync-guard test: FAIL ==="; exit 1; fi
 echo "=== sync-guard test: PASS ==="

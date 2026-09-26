@@ -22,9 +22,8 @@ mkdir -p "$META_DIR"
 mapfile -t reg_files < <(list_registry_files)
 (( ${#reg_files[@]} == 0 )) && { echo "no intent records — nothing to check"; exit 0; }
 
-TMPDIR_RUN="$(mktemp -d -t cleanup.XXXXXXXX)"
+TMPDIR_RUN="$(make_tmpdir cleanup)" || exit 1
 trap 'rm -rf "$TMPDIR_RUN"' EXIT
-chmod 0700 "$TMPDIR_RUN"
 U_JSON="$TMPDIR_RUN/up.json"
 U_ERR="$TMPDIR_RUN/up.err"
 P_JSON="$TMPDIR_RUN/pr.json"

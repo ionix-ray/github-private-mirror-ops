@@ -18,9 +18,23 @@ TARGET_OWNER="${TARGET_OWNER:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib-tracker.sh"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib-gh.sh"
 
 mapfile -t reg_files < <(list_registry_files)
 (( ${#reg_files[@]} == 0 )) && { echo "no intent records — skip"; exit 0; }
+
+# Hoist the open issue/PR listings once per run: per-mirror checks reuse the
+# snapshots instead of N+1 round-trips. Best-effort — mirrors fall back to a
+# live fetch when a snapshot is missing.
+RUN_TMP="$(make_tmpdir syncrun)" || RUN_TMP=""
+trap '[[ -n "${RUN_TMP:-}" ]] && rm -rf "$RUN_TMP"' EXIT
+if [[ -n "$RUN_TMP" ]] && gh_list_open_issues "$GITHUB_REPOSITORY" "$RUN_TMP/issues.json" 2>/dev/null; then
+  export GH_ISSUES_FILE="$RUN_TMP/issues.json"
+fi
+if [[ -n "$RUN_TMP" ]] && gh_list_open_prs "$GITHUB_REPOSITORY" "$RUN_TMP/prs.json" 2>/dev/null; then
+  export GH_PRS_FILE="$RUN_TMP/prs.json"
+fi
 
 synced=0 skipped=0 failed=0
 for rf in "${reg_files[@]}"; do
