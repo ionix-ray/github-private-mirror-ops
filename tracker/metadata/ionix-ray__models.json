@@ -1,9 +1,9 @@
 {
-  "last_synced_at": "2026-09-28T13:22:34Z",
-  "last_synced_sha": "81bf92a5a9f540ea8d9fbd0e724490600152cffd",
+  "last_synced_at": "2026-09-29T12:27:49Z",
+  "last_synced_sha": "4c41c564b8772fb5e8c39029dd6bae7d3677dad0",
   "last_synced_status": "ok",
-  "last_upstream_sha": "81bf92a5a9f540ea8d9fbd0e724490600152cffd",
+  "last_upstream_sha": "4c41c564b8772fb5e8c39029dd6bae7d3677dad0",
   "private": "ionix-ray/models",
-  "refreshed_at": "2026-09-28T13:22:34Z",
+  "refreshed_at": "2026-09-29T12:27:49Z",
   "upstream": "Portkey-AI/models"
 }
