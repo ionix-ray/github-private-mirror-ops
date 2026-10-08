@@ -8,7 +8,7 @@
   "has_wiki": true,
   "homepage": "",
   "is_template": false,
-  "language": "",
+  "language": "TypeScript",
   "languages": {
     "PowerShell": 4385,
     "Shell": 7419,
@@ -25,7 +25,7 @@
   "network_count": 10,
   "open_issues_count": 0,
   "private": "ionix-ray/PiRanha",
-  "refreshed_at": "2026-10-07T12:58:41Z",
+  "refreshed_at": "2026-10-08T03:32:44Z",
   "stargazers_count": 5,
   "subscribers_count": 0,
   "topics": [],
@@ -36,5 +36,5 @@
   "upstream_pushed_at": "2026-06-20T23:53:54Z",
   "upstream_size_kb": 782,
   "upstream_state": "active",
-  "watchers_count": 5
+  "watchers_count": 0
 }

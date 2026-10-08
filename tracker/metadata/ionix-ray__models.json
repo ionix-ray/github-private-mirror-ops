@@ -1,9 +1,44 @@
 {
+  "created_at": "2025-12-26T07:24:38Z",
+  "description": "This repository contains comprehensive pricing and configuration data for LLMs. It powers cost attribution for 200+ enterprises running 400B+ tokens through Portkey AI Gateway every day.",
+  "forks_count": 42,
+  "has_discussions": false,
+  "has_pages": false,
+  "has_projects": true,
+  "has_wiki": true,
+  "homepage": "https://portkey.ai/models",
+  "is_template": false,
+  "language": "JavaScript",
+  "languages": {
+    "JavaScript": 16248,
+    "Python": 8256,
+    "Shell": 67
+  },
   "last_synced_at": "2026-10-07T12:59:10Z",
   "last_synced_sha": "2457e08f8a1cea0b142be02b6950eb9ae71cc05e",
   "last_synced_status": "ok",
   "last_upstream_sha": "2457e08f8a1cea0b142be02b6950eb9ae71cc05e",
+  "license_current_name": "MIT License",
+  "license_current_spdx": "MIT",
+  "license_history": [],
+  "network_count": 42,
+  "open_issues_count": 9,
   "private": "ionix-ray/models",
-  "refreshed_at": "2026-10-07T12:59:10Z",
-  "upstream": "Portkey-AI/models"
+  "refreshed_at": "2026-10-08T03:32:44Z",
+  "stargazers_count": 143,
+  "subscribers_count": 1,
+  "topics": [
+    "ai",
+    "llms",
+    "llms-benchmarking",
+    "models"
+  ],
+  "updated_at": "2026-10-07T23:35:47Z",
+  "upstream": "Portkey-AI/models",
+  "upstream_archived": false,
+  "upstream_default_branch": "main",
+  "upstream_pushed_at": "2026-10-08T03:24:40Z",
+  "upstream_size_kb": 11972,
+  "upstream_state": "active",
+  "watchers_count": 1
 }

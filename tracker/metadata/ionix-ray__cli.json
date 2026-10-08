@@ -24,16 +24,16 @@
   "network_count": 0,
   "open_issues_count": 0,
   "private": "ionix-ray/cli",
-  "refreshed_at": "2026-10-07T12:58:59Z",
+  "refreshed_at": "2026-10-08T03:32:44Z",
   "stargazers_count": 7,
   "subscribers_count": 0,
   "topics": [],
-  "updated_at": "2026-08-21T04:15:33Z",
+  "updated_at": "2026-09-27T11:16:47Z",
   "upstream": "belt-sh/cli",
   "upstream_archived": false,
   "upstream_default_branch": "main",
-  "upstream_pushed_at": "2026-07-13T13:45:38Z",
-  "upstream_size_kb": 32,
+  "upstream_pushed_at": "2026-09-27T11:16:43Z",
+  "upstream_size_kb": 33,
   "upstream_state": "active",
-  "watchers_count": 7
+  "watchers_count": 0
 }
