@@ -19,6 +19,7 @@
   "last_synced_sha": "",
   "last_synced_status": "failed",
   "last_upstream_sha": "",
+  "last_validated_at": "2026-10-10T13:08:06Z",
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
@@ -35,6 +36,6 @@
   "upstream_default_branch": "main",
   "upstream_pushed_at": "2026-10-08T00:17:59Z",
   "upstream_size_kb": 100286,
-  "upstream_state": "active",
+  "upstream_state": "deleted",
   "watchers_count": 12
 }

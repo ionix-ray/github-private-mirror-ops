@@ -1,6 +1,6 @@
 # github-private-mirror-ops
 
-_Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `2026-10-10T12:11:34Z`._
+_Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `2026-10-10T13:08:36Z`._
 
 ## Summary
 
@@ -20,7 +20,7 @@ _Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `202
 | [carbon-design-system/carbon-charts](https://github.com/carbon-design-system/carbon-charts) | [ionix-ray/carbon-charts](https://github.com/ionix-ray/carbon-charts) | `main` | 1,055 | 219 | HTML | 2026-10-05 | ok | Apache-2.0 |  |
 | [belt-sh/cli](https://github.com/belt-sh/cli) | [ionix-ray/cli](https://github.com/ionix-ray/cli) | `main` | 7 | 0 | Shell | 2026-09-27 | ok | MIT |  |
 | [experientiallabs/experiential-enterprise](https://github.com/experientiallabs/experiential-enterprise) | [ionix-ray/experiential-enterprise](https://github.com/ionix-ray/experiential-enterprise) | `main` | 0 | 0 | - | - | deleted | unknown | upstream deleted |
-| [experientiallabs/experiential](https://github.com/experientiallabs/experiential) | [ionix-ray/experiential](https://github.com/ionix-ray/experiential) | `main` | 9,571 | 234 | Python | 2026-10-08 | failed | Apache-2.0 |  |
+| [experientiallabs/experiential](https://github.com/experientiallabs/experiential) | [ionix-ray/experiential](https://github.com/ionix-ray/experiential) | `main` | 9,571 | 234 | Python | 2026-10-08 | deleted | Apache-2.0 | upstream deleted |
 | [Portkey-AI/models](https://github.com/Portkey-AI/models) | [ionix-ray/models](https://github.com/ionix-ray/models) | `main` | 143 | 42 | JavaScript | 2026-10-08 | ok | MIT |  |
 | [Portkey-AI/openapi](https://github.com/Portkey-AI/openapi) | [ionix-ray/openapi](https://github.com/ionix-ray/openapi) | `master` | 7 | 7 | - | 2026-09-30 | ok | MIT |  |
 | [pixie-io/pixie](https://github.com/pixie-io/pixie) | [ionix-ray/pixie](https://github.com/ionix-ray/pixie) | `main` | 6,546 | 506 | C++ | 2026-10-08 | ok | Apache-2.0 |  |
