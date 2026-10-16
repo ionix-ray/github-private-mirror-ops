@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T12:14:53.104697+00:00",
+  "generated_at": "2026-10-16T11:02:31.050175+00:00",
   "version": 1,
   "defaults": {
     "schedule": "0 6 * * *",
@@ -32,7 +32,7 @@
         "Shell": 7419,
         "TypeScript": 143668
       },
-      "last_synced_at": "2026-10-15T11:06:54Z",
+      "last_synced_at": "2026-10-16T11:01:42Z",
       "last_synced_sha": "0f66391e19a145bee85763c2636e46322f96d1de",
       "last_synced_status": "ok",
       "last_upstream_sha": "0f66391e19a145bee85763c2636e46322f96d1de",
@@ -43,7 +43,7 @@
       "network_count": 10,
       "open_issues_count": 0,
       "private": "ionix-ray/PiRanha",
-      "refreshed_at": "2026-10-15T11:06:54Z",
+      "refreshed_at": "2026-10-16T11:01:42Z",
       "stargazers_count": 5,
       "subscribers_count": 0,
       "topics": [],
@@ -61,8 +61,8 @@
       "_computed": {
         "health_score": 12,
         "opportunity_flag": "",
-        "days_since_push": 116,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 117,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -80,7 +80,7 @@
         "Python": 1593214,
         "Shell": 15342
       },
-      "last_synced_at": "2026-10-15T11:06:55Z",
+      "last_synced_at": "2026-10-16T11:01:42Z",
       "last_synced_sha": "91dc5f84565bb505577ac9524f107f453a6e8d1f",
       "last_synced_status": "ok",
       "last_upstream_sha": "91dc5f84565bb505577ac9524f107f453a6e8d1f",
@@ -90,7 +90,7 @@
       "network_count": 1451,
       "open_issues_count": 23,
       "private": "ionix-ray/antigravity-sdk-python",
-      "refreshed_at": "2026-10-15T11:06:55Z",
+      "refreshed_at": "2026-10-16T11:01:42Z",
       "stargazers_count": 3658,
       "subscribers_count": 159,
       "topics": [
@@ -118,8 +118,8 @@
       "_computed": {
         "health_score": 85,
         "opportunity_flag": "Strong community engagement",
-        "days_since_push": 7,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -148,17 +148,17 @@
         "TypeScript": 7194377,
         "jq": 6318
       },
-      "last_synced_at": "2026-10-15T11:06:55Z",
-      "last_synced_sha": "77c1259f851e6c8c6b53d7963cc8a49415473dd7",
+      "last_synced_at": "2026-10-16T11:01:43Z",
+      "last_synced_sha": "5d5c1018dac537824d75795a46babbd6bcbf9d5f",
       "last_synced_status": "ok",
-      "last_upstream_sha": "77c1259f851e6c8c6b53d7963cc8a49415473dd7",
+      "last_upstream_sha": "5d5c1018dac537824d75795a46babbd6bcbf9d5f",
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
       "network_count": 1354,
       "open_issues_count": 522,
       "private": "ionix-ray/bifrost",
-      "refreshed_at": "2026-10-15T11:06:55Z",
+      "refreshed_at": "2026-10-16T11:01:43Z",
       "stargazers_count": 8619,
       "subscribers_count": 35,
       "topics": [
@@ -193,8 +193,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "Active community, many open issues",
-        "days_since_push": 7,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -217,7 +217,7 @@
         "TypeScript": 2194745,
         "Vue": 710
       },
-      "last_synced_at": "2026-10-15T11:07:14Z",
+      "last_synced_at": "2026-10-16T11:01:58Z",
       "last_synced_sha": "225ecc1884b2791907fb5295ae309b3c576720a6",
       "last_synced_status": "ok",
       "last_upstream_sha": "225ecc1884b2791907fb5295ae309b3c576720a6",
@@ -228,7 +228,7 @@
       "network_count": 219,
       "open_issues_count": 265,
       "private": "ionix-ray/carbon-charts",
-      "refreshed_at": "2026-10-15T11:07:14Z",
+      "refreshed_at": "2026-10-16T11:01:58Z",
       "stargazers_count": 1055,
       "subscribers_count": 27,
       "topics": [
@@ -261,8 +261,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "Active community, many open issues",
-        "days_since_push": 10,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 11,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -280,7 +280,7 @@
         "PowerShell": 1967,
         "Shell": 3284
       },
-      "last_synced_at": "2026-10-15T11:07:15Z",
+      "last_synced_at": "2026-10-16T11:01:59Z",
       "last_synced_sha": "9736524264825acd558521646d20bc33873ad992",
       "last_synced_status": "ok",
       "last_upstream_sha": "9736524264825acd558521646d20bc33873ad992",
@@ -291,7 +291,7 @@
       "network_count": 0,
       "open_issues_count": 0,
       "private": "ionix-ray/cli",
-      "refreshed_at": "2026-10-15T11:07:15Z",
+      "refreshed_at": "2026-10-16T11:01:59Z",
       "stargazers_count": 7,
       "subscribers_count": 0,
       "topics": [],
@@ -310,17 +310,17 @@
         "health_score": 30,
         "opportunity_flag": "",
         "days_since_push": 18,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
-      "last_synced_at": "2026-10-15T11:07:15Z",
+      "last_synced_at": "2026-10-16T11:01:59Z",
       "last_synced_sha": "",
       "last_synced_status": "failed",
       "last_upstream_sha": "",
       "last_validated_at": "2026-10-15T12:14:17Z",
       "private": "ionix-ray/experiential-enterprise",
-      "refreshed_at": "2026-10-15T11:07:15Z",
+      "refreshed_at": "2026-10-16T11:01:59Z",
       "upstream": "experientiallabs/experiential-enterprise",
       "upstream_state": "deleted",
       "branch": "main",
@@ -330,7 +330,7 @@
         "health_score": 0,
         "opportunity_flag": "",
         "days_since_push": null,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -350,7 +350,7 @@
         "Python": 16953498,
         "Rust": 2883589
       },
-      "last_synced_at": "2026-10-15T11:07:15Z",
+      "last_synced_at": "2026-10-16T11:01:59Z",
       "last_synced_sha": "",
       "last_synced_status": "failed",
       "last_upstream_sha": "",
@@ -361,7 +361,7 @@
       "network_count": 234,
       "open_issues_count": 43,
       "private": "ionix-ray/experiential",
-      "refreshed_at": "2026-10-15T11:07:15Z",
+      "refreshed_at": "2026-10-16T11:01:59Z",
       "stargazers_count": 9571,
       "subscribers_count": 12,
       "topics": [],
@@ -379,8 +379,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "High demand, low competition",
-        "days_since_push": 7,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -399,17 +399,17 @@
         "Python": 8256,
         "Shell": 67
       },
-      "last_synced_at": "2026-10-15T11:07:16Z",
-      "last_synced_sha": "4f6dcee747925991423939698a38ee43a800bc68",
+      "last_synced_at": "2026-10-16T11:01:59Z",
+      "last_synced_sha": "72e1084840af7e14350ff6a12d33255a878bbec5",
       "last_synced_status": "ok",
-      "last_upstream_sha": "4f6dcee747925991423939698a38ee43a800bc68",
+      "last_upstream_sha": "72e1084840af7e14350ff6a12d33255a878bbec5",
       "license_current_name": "MIT License",
       "license_current_spdx": "MIT",
       "license_history": [],
       "network_count": 42,
       "open_issues_count": 9,
       "private": "ionix-ray/models",
-      "refreshed_at": "2026-10-15T11:07:16Z",
+      "refreshed_at": "2026-10-16T11:01:59Z",
       "stargazers_count": 143,
       "subscribers_count": 1,
       "topics": [
@@ -432,8 +432,8 @@
       "_computed": {
         "health_score": 62,
         "opportunity_flag": "",
-        "days_since_push": 7,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -448,7 +448,7 @@
       "is_template": false,
       "language": "",
       "languages": {},
-      "last_synced_at": "2026-10-15T11:07:19Z",
+      "last_synced_at": "2026-10-16T11:02:03Z",
       "last_synced_sha": "a27feb9efaac3653d2d94eca5d7d210944b6e160",
       "last_synced_status": "ok",
       "last_upstream_sha": "a27feb9efaac3653d2d94eca5d7d210944b6e160",
@@ -458,7 +458,7 @@
       "network_count": 7,
       "open_issues_count": 1,
       "private": "ionix-ray/openapi",
-      "refreshed_at": "2026-10-15T11:07:19Z",
+      "refreshed_at": "2026-10-16T11:02:03Z",
       "stargazers_count": 7,
       "subscribers_count": 1,
       "topics": [
@@ -483,8 +483,8 @@
       "_computed": {
         "health_score": 41,
         "opportunity_flag": "",
-        "days_since_push": 15,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 16,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -520,10 +520,10 @@
         "Thrift": 498,
         "TypeScript": 1753038
       },
-      "last_synced_at": "2026-10-15T11:07:20Z",
-      "last_synced_sha": "4b445e0b7907c79d034bcb4a227bbaede94d370a",
+      "last_synced_at": "2026-10-16T11:02:03Z",
+      "last_synced_sha": "8c2276ddad90db28de0da515d58831fe06896839",
       "last_synced_status": "ok",
-      "last_upstream_sha": "4b445e0b7907c79d034bcb4a227bbaede94d370a",
+      "last_upstream_sha": "8c2276ddad90db28de0da515d58831fe06896839",
       "last_validated_at": "",
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
@@ -531,7 +531,7 @@
       "network_count": 506,
       "open_issues_count": 303,
       "private": "ionix-ray/pixie",
-      "refreshed_at": "2026-10-15T11:07:20Z",
+      "refreshed_at": "2026-10-16T11:02:03Z",
       "stargazers_count": 6546,
       "subscribers_count": 75,
       "topics": [
@@ -570,8 +570,8 @@
       "_computed": {
         "health_score": 65,
         "opportunity_flag": "High demand, low competition",
-        "days_since_push": 7,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -596,10 +596,10 @@
         "Rust": 6543108,
         "Shell": 17202
       },
-      "last_synced_at": "2026-10-15T11:07:20Z",
-      "last_synced_sha": "77f25f87507a74f9d58d25ee12f20b98fb98ee51",
+      "last_synced_at": "2026-10-16T11:02:09Z",
+      "last_synced_sha": "e2fb48b068548b738377edf8fb53931d184df91d",
       "last_synced_status": "ok",
-      "last_upstream_sha": "77f25f87507a74f9d58d25ee12f20b98fb98ee51",
+      "last_upstream_sha": "e2fb48b068548b738377edf8fb53931d184df91d",
       "last_validated_at": "",
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
@@ -607,7 +607,7 @@
       "network_count": 3074,
       "open_issues_count": 724,
       "private": "ionix-ray/qiskit",
-      "refreshed_at": "2026-10-15T11:07:20Z",
+      "refreshed_at": "2026-10-16T11:02:09Z",
       "stargazers_count": 7871,
       "subscribers_count": 232,
       "topics": [
@@ -635,8 +635,8 @@
       "_computed": {
         "health_score": 65,
         "opportunity_flag": "Active community, many open issues",
-        "days_since_push": 7,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -656,17 +656,17 @@
         "Python": 4228997,
         "Shell": 12651
       },
-      "last_synced_at": "2026-10-15T11:07:26Z",
-      "last_synced_sha": "a7ca5a3bdd64f079a7ba777862e9d3d0822f691b",
+      "last_synced_at": "2026-10-16T11:02:15Z",
+      "last_synced_sha": "98f43a01f8200d8b02c0d717e04ec524a67a5769",
       "last_synced_status": "ok",
-      "last_upstream_sha": "a7ca5a3bdd64f079a7ba777862e9d3d0822f691b",
+      "last_upstream_sha": "98f43a01f8200d8b02c0d717e04ec524a67a5769",
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
       "network_count": 1038,
       "open_issues_count": 129,
       "private": "ionix-ray/swarms",
-      "refreshed_at": "2026-10-15T11:07:26Z",
+      "refreshed_at": "2026-10-16T11:02:15Z",
       "stargazers_count": 7234,
       "subscribers_count": 67,
       "topics": [
@@ -703,8 +703,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "Strong community engagement",
-        "days_since_push": 7,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -731,17 +731,17 @@
         "Shell": 2789374,
         "TypeScript": 25595764
       },
-      "last_synced_at": "2026-10-15T11:07:30Z",
-      "last_synced_sha": "96a63c3e97f0eceebdea6408ae4a7813ab496b4f",
+      "last_synced_at": "2026-10-16T11:02:23Z",
+      "last_synced_sha": "2eb98cbe705437b35758a514ce662e075e7f2d12",
       "last_synced_status": "ok",
-      "last_upstream_sha": "96a63c3e97f0eceebdea6408ae4a7813ab496b4f",
+      "last_upstream_sha": "2eb98cbe705437b35758a514ce662e075e7f2d12",
       "license_current_name": "MIT License",
       "license_current_spdx": "MIT",
       "license_history": [],
       "network_count": 4,
       "open_issues_count": 206,
       "private": "ionix-ray/uzi",
-      "refreshed_at": "2026-10-15T11:07:30Z",
+      "refreshed_at": "2026-10-16T11:02:23Z",
       "stargazers_count": 87,
       "subscribers_count": 0,
       "topics": [],
@@ -759,8 +759,8 @@
       "_computed": {
         "health_score": 38,
         "opportunity_flag": "",
-        "days_since_push": 7,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     },
     {
@@ -786,7 +786,7 @@
         "Slang": 2422,
         "WGSL": 2201980
       },
-      "last_synced_at": "2026-10-15T11:07:37Z",
+      "last_synced_at": "2026-10-16T11:02:30Z",
       "last_synced_sha": "14328f49918cce19f7cc8bf703435968c8293035",
       "last_synced_status": "ok",
       "last_upstream_sha": "14328f49918cce19f7cc8bf703435968c8293035",
@@ -797,7 +797,7 @@
       "network_count": 1496,
       "open_issues_count": 1168,
       "private": "ionix-ray/wgpu",
-      "refreshed_at": "2026-10-15T11:07:37Z",
+      "refreshed_at": "2026-10-16T11:02:30Z",
       "stargazers_count": 18230,
       "subscribers_count": 117,
       "topics": [
@@ -824,8 +824,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "High demand, low competition",
-        "days_since_push": 7,
-        "generated_at": "2026-10-15T12:14:53.104697+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-16T11:02:31.050175+00:00"
       }
     }
   ]

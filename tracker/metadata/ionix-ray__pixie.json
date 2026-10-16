@@ -31,10 +31,10 @@
     "Thrift": 498,
     "TypeScript": 1753038
   },
-  "last_synced_at": "2026-10-15T11:07:20Z",
-  "last_synced_sha": "4b445e0b7907c79d034bcb4a227bbaede94d370a",
+  "last_synced_at": "2026-10-16T11:02:03Z",
+  "last_synced_sha": "8c2276ddad90db28de0da515d58831fe06896839",
   "last_synced_status": "ok",
-  "last_upstream_sha": "4b445e0b7907c79d034bcb4a227bbaede94d370a",
+  "last_upstream_sha": "8c2276ddad90db28de0da515d58831fe06896839",
   "last_validated_at": "",
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
@@ -42,7 +42,7 @@
   "network_count": 506,
   "open_issues_count": 303,
   "private": "ionix-ray/pixie",
-  "refreshed_at": "2026-10-15T11:07:20Z",
+  "refreshed_at": "2026-10-16T11:02:03Z",
   "stargazers_count": 6546,
   "subscribers_count": 75,
   "topics": [
