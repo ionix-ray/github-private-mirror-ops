@@ -1,12 +1,12 @@
 # github-private-mirror-ops
 
-_Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `2026-10-16T11:59:42Z`._
+_Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `2026-10-16T18:47:15Z`._
 
 ## Summary
 
-- Mirrors registered: **14**
-- Status: healthy **12** · paused **0** · diverged **0** · failed **2** · archived **0**
-- Total upstream stars: **63,033** · forks: **9,435**
+- Mirrors registered: **15**
+- Status: healthy **13** · paused **0** · diverged **0** · failed **2** · archived **0**
+- Total upstream stars: **64,339** · forks: **9,890**
 - Daily sync: `0 6 * * *` UTC
 - Strategy: `fast-forward`
 
@@ -14,20 +14,21 @@ _Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `202
 
 | Upstream | Private | Branch | Stars | Forks | Lang | Last Push | Status | License | Notes |
 |---|---|---|---|---|---|---|---|---|---|
+| [gyoisamurai/GyoiThon](https://github.com/gyoisamurai/GyoiThon) | [ionix-ray/GyoiThon](https://github.com/ionix-ray/GyoiThon) | `master` | 830 | 304 | Python | 2023-04-21 | (pending) | OTHER |  |
 | [Falcon-Forge/PiRanha](https://github.com/Falcon-Forge/PiRanha) | [ionix-ray/PiRanha](https://github.com/ionix-ray/PiRanha) | `main` | 5 | 10 | TypeScript | 2026-06-20 | ok | MIT |  |
-| [google-antigravity/antigravity-sdk-python](https://github.com/google-antigravity/antigravity-sdk-python) | [ionix-ray/antigravity-sdk-python](https://github.com/ionix-ray/antigravity-sdk-python) | `main` | 3,658 | 1,451 | Python | 2026-10-07 | ok | Apache-2.0 |  |
-| [maximhq/bifrost](https://github.com/maximhq/bifrost) | [ionix-ray/bifrost](https://github.com/ionix-ray/bifrost) | `dev` | 8,619 | 1,354 | Go | 2026-10-07 | ok | Apache-2.0 |  |
-| [carbon-design-system/carbon-charts](https://github.com/carbon-design-system/carbon-charts) | [ionix-ray/carbon-charts](https://github.com/ionix-ray/carbon-charts) | `main` | 1,055 | 219 | HTML | 2026-10-05 | ok | Apache-2.0 |  |
+| [google-antigravity/antigravity-sdk-python](https://github.com/google-antigravity/antigravity-sdk-python) | [ionix-ray/antigravity-sdk-python](https://github.com/ionix-ray/antigravity-sdk-python) | `main` | 3,757 | 1,483 | Python | 2026-10-13 | ok | Apache-2.0 |  |
+| [maximhq/bifrost](https://github.com/maximhq/bifrost) | [ionix-ray/bifrost](https://github.com/ionix-ray/bifrost) | `dev` | 8,855 | 1,408 | Go | 2026-10-16 | ok | Apache-2.0 |  |
+| [carbon-design-system/carbon-charts](https://github.com/carbon-design-system/carbon-charts) | [ionix-ray/carbon-charts](https://github.com/ionix-ray/carbon-charts) | `main` | 1,055 | 220 | HTML | 2026-10-05 | ok | Apache-2.0 |  |
 | [belt-sh/cli](https://github.com/belt-sh/cli) | [ionix-ray/cli](https://github.com/ionix-ray/cli) | `main` | 7 | 0 | Shell | 2026-09-27 | ok | MIT |  |
 | [experientiallabs/experiential-enterprise](https://github.com/experientiallabs/experiential-enterprise) | [ionix-ray/experiential-enterprise](https://github.com/ionix-ray/experiential-enterprise) | `main` | 0 | 0 | - | - | deleted | unknown | upstream deleted |
 | [experientiallabs/experiential](https://github.com/experientiallabs/experiential) | [ionix-ray/experiential](https://github.com/ionix-ray/experiential) | `main` | 9,571 | 234 | Python | 2026-10-08 | deleted | Apache-2.0 | upstream deleted |
-| [Portkey-AI/models](https://github.com/Portkey-AI/models) | [ionix-ray/models](https://github.com/ionix-ray/models) | `main` | 143 | 42 | JavaScript | 2026-10-08 | ok | MIT |  |
-| [Portkey-AI/openapi](https://github.com/Portkey-AI/openapi) | [ionix-ray/openapi](https://github.com/ionix-ray/openapi) | `master` | 7 | 7 | - | 2026-09-30 | ok | MIT |  |
-| [pixie-io/pixie](https://github.com/pixie-io/pixie) | [ionix-ray/pixie](https://github.com/ionix-ray/pixie) | `main` | 6,546 | 506 | C++ | 2026-10-08 | ok | Apache-2.0 |  |
-| [Qiskit/qiskit](https://github.com/Qiskit/qiskit) | [ionix-ray/qiskit](https://github.com/ionix-ray/qiskit) | `main` | 7,871 | 3,074 | Python | 2026-10-08 | ok | Apache-2.0 |  |
-| [kyegomez/swarms](https://github.com/kyegomez/swarms) | [ionix-ray/swarms](https://github.com/ionix-ray/swarms) | `master` | 7,234 | 1,038 | Python | 2026-10-07 | ok | Apache-2.0 |  |
-| [vtmocanu/uzi](https://github.com/vtmocanu/uzi) | [ionix-ray/uzi](https://github.com/ionix-ray/uzi) | `main` | 87 | 4 | Go | 2026-10-08 | ok | MIT |  |
-| [gfx-rs/wgpu](https://github.com/gfx-rs/wgpu) | [ionix-ray/wgpu](https://github.com/ionix-ray/wgpu) | `trunk` | 18,230 | 1,496 | Rust | 2026-10-07 | ok | Apache-2.0 |  |
+| [Portkey-AI/models](https://github.com/Portkey-AI/models) | [ionix-ray/models](https://github.com/ionix-ray/models) | `main` | 143 | 46 | JavaScript | 2026-10-16 | ok | MIT |  |
+| [Portkey-AI/openapi](https://github.com/Portkey-AI/openapi) | [ionix-ray/openapi](https://github.com/ionix-ray/openapi) | `master` | 7 | 7 | - | 2026-10-13 | ok | MIT |  |
+| [pixie-io/pixie](https://github.com/pixie-io/pixie) | [ionix-ray/pixie](https://github.com/ionix-ray/pixie) | `main` | 6,548 | 507 | C++ | 2026-10-16 | ok | Apache-2.0 |  |
+| [Qiskit/qiskit](https://github.com/Qiskit/qiskit) | [ionix-ray/qiskit](https://github.com/ionix-ray/qiskit) | `main` | 7,893 | 3,082 | Python | 2026-10-16 | ok | Apache-2.0 |  |
+| [kyegomez/swarms](https://github.com/kyegomez/swarms) | [ionix-ray/swarms](https://github.com/ionix-ray/swarms) | `master` | 7,268 | 1,047 | Python | 2026-10-16 | ok | Apache-2.0 |  |
+| [vtmocanu/uzi](https://github.com/vtmocanu/uzi) | [ionix-ray/uzi](https://github.com/ionix-ray/uzi) | `main` | 91 | 4 | Go | 2026-10-16 | ok | MIT |  |
+| [gfx-rs/wgpu](https://github.com/gfx-rs/wgpu) | [ionix-ray/wgpu](https://github.com/ionix-ray/wgpu) | `trunk` | 18,309 | 1,538 | Rust | 2026-10-16 | ok | Apache-2.0 |  |
 
 ## License Change Log
 

@@ -1,7 +1,7 @@
 {
   "created_at": "2023-05-11T01:09:00Z",
   "description": "The Enterprise-Grade Multi-Agent Orchestration Framework. Website: https://swarms.ai",
-  "forks_count": 1038,
+  "forks_count": 1047,
   "has_discussions": true,
   "has_pages": false,
   "has_projects": true,
@@ -10,10 +10,8 @@
   "is_template": false,
   "language": "Python",
   "languages": {
-    "Dockerfile": 1297,
-    "PowerShell": 4574,
-    "Python": 4228997,
-    "Shell": 12651
+    "Dockerfile": 1080,
+    "Python": 4306646
   },
   "last_synced_at": "2026-10-16T11:02:15Z",
   "last_synced_sha": "98f43a01f8200d8b02c0d717e04ec524a67a5769",
@@ -22,12 +20,12 @@
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
-  "network_count": 1038,
-  "open_issues_count": 129,
+  "network_count": 1047,
+  "open_issues_count": 141,
   "private": "ionix-ray/swarms",
-  "refreshed_at": "2026-10-16T11:02:15Z",
-  "stargazers_count": 7234,
-  "subscribers_count": 67,
+  "refreshed_at": "2026-10-16T18:46:54Z",
+  "stargazers_count": 7268,
+  "subscribers_count": 66,
   "topics": [
     "artificial-intelligence",
     "langchain",
@@ -48,12 +46,12 @@
     "agentic-ai",
     "claude-code"
   ],
-  "updated_at": "2026-10-07T22:57:46Z",
+  "updated_at": "2026-10-16T18:45:29Z",
   "upstream": "kyegomez/swarms",
   "upstream_archived": false,
   "upstream_default_branch": "master",
-  "upstream_pushed_at": "2026-10-07T21:56:48Z",
-  "upstream_size_kb": 189378,
+  "upstream_pushed_at": "2026-10-16T02:32:28Z",
+  "upstream_size_kb": 189618,
   "upstream_state": "active",
-  "watchers_count": 67
+  "watchers_count": 66
 }

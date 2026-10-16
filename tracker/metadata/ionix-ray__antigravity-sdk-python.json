@@ -1,7 +1,7 @@
 {
   "created_at": "2026-04-29T21:12:19Z",
   "description": "A Python library for building AI agents that leverage the full power of Google Antigravity.",
-  "forks_count": 1451,
+  "forks_count": 1483,
   "has_discussions": true,
   "has_pages": false,
   "has_projects": true,
@@ -10,7 +10,7 @@
   "is_template": false,
   "language": "Python",
   "languages": {
-    "Python": 1593214,
+    "Python": 1630575,
     "Shell": 15342
   },
   "last_synced_at": "2026-10-16T11:01:42Z",
@@ -20,12 +20,12 @@
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
-  "network_count": 1451,
-  "open_issues_count": 23,
+  "network_count": 1483,
+  "open_issues_count": 24,
   "private": "ionix-ray/antigravity-sdk-python",
-  "refreshed_at": "2026-10-16T11:01:42Z",
-  "stargazers_count": 3658,
-  "subscribers_count": 159,
+  "refreshed_at": "2026-10-16T18:46:54Z",
+  "stargazers_count": 3757,
+  "subscribers_count": 162,
   "topics": [
     "ai-agents",
     "antigravity",
@@ -37,12 +37,12 @@
     "python-sdk",
     "skills"
   ],
-  "updated_at": "2026-10-08T00:02:28Z",
+  "updated_at": "2026-10-16T18:41:09Z",
   "upstream": "google-antigravity/antigravity-sdk-python",
   "upstream_archived": false,
   "upstream_default_branch": "main",
-  "upstream_pushed_at": "2026-10-07T16:43:58Z",
-  "upstream_size_kb": 2046,
+  "upstream_pushed_at": "2026-10-13T22:48:33Z",
+  "upstream_size_kb": 2292,
   "upstream_state": "active",
-  "watchers_count": 159
+  "watchers_count": 162
 }

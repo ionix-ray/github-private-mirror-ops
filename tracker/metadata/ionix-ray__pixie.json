@@ -1,7 +1,7 @@
 {
   "created_at": "2020-02-27T00:22:45Z",
   "description": "Instant Kubernetes-Native Application Observability",
-  "forks_count": 506,
+  "forks_count": 507,
   "has_discussions": false,
   "has_pages": false,
   "has_projects": true,
@@ -11,7 +11,7 @@
   "language": "C++",
   "languages": {
     "C": 331850,
-    "C++": 9550212,
+    "C++": 9560051,
     "Dockerfile": 33909,
     "Go": 3949917,
     "Go Template": 17092,
@@ -27,7 +27,7 @@
     "Ruby": 46053,
     "Scala": 2626,
     "Shell": 284663,
-    "Starlark": 1108754,
+    "Starlark": 1110163,
     "Thrift": 498,
     "TypeScript": 1753038
   },
@@ -39,11 +39,11 @@
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
-  "network_count": 506,
+  "network_count": 507,
   "open_issues_count": 303,
   "private": "ionix-ray/pixie",
-  "refreshed_at": "2026-10-16T11:02:03Z",
-  "stargazers_count": 6546,
+  "refreshed_at": "2026-10-16T18:46:54Z",
+  "stargazers_count": 6548,
   "subscribers_count": 75,
   "topics": [
     "golang",
@@ -67,12 +67,12 @@
     "pandas",
     "apache-arrow"
   ],
-  "updated_at": "2026-10-08T00:32:37Z",
+  "updated_at": "2026-10-16T04:39:33Z",
   "upstream": "pixie-io/pixie",
   "upstream_archived": false,
   "upstream_default_branch": "main",
-  "upstream_pushed_at": "2026-10-08T00:32:29Z",
-  "upstream_size_kb": 121776,
+  "upstream_pushed_at": "2026-10-16T04:40:37Z",
+  "upstream_size_kb": 121786,
   "upstream_state": "active",
   "watchers_count": 75
 }
