@@ -21,7 +21,7 @@
     "Slang": 2422,
     "WGSL": 2202613
   },
-  "last_synced_at": "2026-10-17T10:23:19Z",
+  "last_synced_at": "2026-10-18T10:40:49Z",
   "last_synced_sha": "efcf445784dd31537f09bc61bad27431de713fce",
   "last_synced_status": "ok",
   "last_upstream_sha": "efcf445784dd31537f09bc61bad27431de713fce",
@@ -32,7 +32,7 @@
   "network_count": 1538,
   "open_issues_count": 1175,
   "private": "ionix-ray/wgpu",
-  "refreshed_at": "2026-10-17T10:23:19Z",
+  "refreshed_at": "2026-10-18T10:40:49Z",
   "stargazers_count": 18309,
   "subscribers_count": 117,
   "topics": [
