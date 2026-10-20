@@ -1,11 +1,11 @@
 # github-private-mirror-ops
 
-_Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `2026-10-19T14:09:14Z`._
+_Live state dashboard. Auto-generated — do not hand-edit. Last refreshed: `2026-10-20T11:11:53Z`._
 
 ## Summary
 
 - Mirrors registered: **15**
-- Status: healthy **13** · paused **0** · diverged **0** · failed **2** · archived **0**
+- Status: healthy **13** · paused **0** · diverged **0** · failed **1** · archived **0**
 - Total upstream stars: **64,339** · forks: **9,890**
 - Daily sync: `0 6 * * *` UTC
 - Strategy: `fast-forward`
