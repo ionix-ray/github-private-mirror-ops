@@ -1,7 +1,7 @@
 {
   "created_at": "2018-09-13T19:18:50Z",
   "description": "A cross-platform, safe, pure-Rust graphics API.",
-  "forks_count": 1538,
+  "forks_count": 1550,
   "has_discussions": true,
   "has_pages": false,
   "has_projects": true,
@@ -10,13 +10,13 @@
   "is_template": false,
   "language": "Rust",
   "languages": {
-    "GLSL": 531044,
+    "GLSL": 531038,
     "HLSL": 345988,
     "HTML": 702,
     "JavaScript": 31287,
     "Metal": 458731,
     "RenderScript": 2,
-    "Rust": 12922250,
+    "Rust": 12920164,
     "Shell": 2020,
     "Slang": 2422,
     "WGSL": 2202613
@@ -29,11 +29,11 @@
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
-  "network_count": 1538,
-  "open_issues_count": 1175,
+  "network_count": 1550,
+  "open_issues_count": 1181,
   "private": "ionix-ray/wgpu",
-  "refreshed_at": "2026-10-20T11:11:52Z",
-  "stargazers_count": 18309,
+  "refreshed_at": "2026-10-21T05:25:56Z",
+  "stargazers_count": 18344,
   "subscribers_count": 117,
   "topics": [
     "webgpu",
@@ -45,12 +45,12 @@
     "hacktoberfest",
     "d3d12"
   ],
-  "updated_at": "2026-10-16T18:00:08Z",
+  "updated_at": "2026-10-21T03:40:52Z",
   "upstream": "gfx-rs/wgpu",
   "upstream_archived": false,
   "upstream_default_branch": "trunk",
-  "upstream_pushed_at": "2026-10-16T13:56:17Z",
-  "upstream_size_kb": 87317,
+  "upstream_pushed_at": "2026-10-20T19:53:39Z",
+  "upstream_size_kb": 87900,
   "upstream_state": "active",
   "watchers_count": 117
 }

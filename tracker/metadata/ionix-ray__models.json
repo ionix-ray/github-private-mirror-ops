@@ -24,7 +24,7 @@
   "network_count": 46,
   "open_issues_count": 9,
   "private": "ionix-ray/models",
-  "refreshed_at": "2026-10-20T11:11:20Z",
+  "refreshed_at": "2026-10-21T05:25:56Z",
   "stargazers_count": 143,
   "subscribers_count": 1,
   "topics": [
@@ -33,12 +33,12 @@
     "llms-benchmarking",
     "models"
   ],
-  "updated_at": "2026-10-16T09:30:00Z",
+  "updated_at": "2026-10-20T13:46:29Z",
   "upstream": "Portkey-AI/models",
   "upstream_archived": false,
   "upstream_default_branch": "main",
-  "upstream_pushed_at": "2026-10-16T09:29:55Z",
-  "upstream_size_kb": 12280,
+  "upstream_pushed_at": "2026-10-20T20:58:48Z",
+  "upstream_size_kb": 12366,
   "upstream_state": "active",
   "watchers_count": 1
 }

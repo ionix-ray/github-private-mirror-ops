@@ -11,7 +11,7 @@
   "language": "Python",
   "languages": {
     "Dockerfile": 1080,
-    "Python": 4306646
+    "Python": 4314839
   },
   "last_synced_at": "2026-10-20T11:11:35Z",
   "last_synced_sha": "11a5ed80506f217481615f3ff721104689208a5c",
@@ -21,10 +21,10 @@
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
   "network_count": 1047,
-  "open_issues_count": 141,
+  "open_issues_count": 145,
   "private": "ionix-ray/swarms",
-  "refreshed_at": "2026-10-20T11:11:35Z",
-  "stargazers_count": 7268,
+  "refreshed_at": "2026-10-21T05:25:56Z",
+  "stargazers_count": 7285,
   "subscribers_count": 66,
   "topics": [
     "artificial-intelligence",
@@ -46,12 +46,12 @@
     "agentic-ai",
     "claude-code"
   ],
-  "updated_at": "2026-10-16T18:45:29Z",
+  "updated_at": "2026-10-20T23:52:43Z",
   "upstream": "kyegomez/swarms",
   "upstream_archived": false,
   "upstream_default_branch": "master",
-  "upstream_pushed_at": "2026-10-16T02:32:28Z",
-  "upstream_size_kb": 189618,
+  "upstream_pushed_at": "2026-10-20T23:42:17Z",
+  "upstream_size_kb": 189904,
   "upstream_state": "active",
   "watchers_count": 66
 }
