@@ -1,7 +1,7 @@
 {
   "created_at": "2026-04-14T00:51:32Z",
   "description": "Reverse engineer anything with agents, from app behavior down to native binaries.",
-  "forks_count": 88006,
+  "forks_count": 90163,
   "has_discussions": true,
   "has_pages": false,
   "has_projects": true,
@@ -17,15 +17,15 @@
     "Go Template": 7196,
     "HTML": 730230,
     "Java": 421256,
-    "JavaScript": 2979836,
+    "JavaScript": 3056963,
     "Linker Script": 692,
     "Makefile": 250,
     "Objective-C": 3047,
-    "Python": 750903,
+    "Python": 798306,
     "Shell": 12663,
     "Solidity": 470,
     "Swift": 54283,
-    "TypeScript": 32499612
+    "TypeScript": 34226682
   },
   "last_synced_at": "2026-10-21T11:27:36Z",
   "last_synced_sha": "aa53c065387c58b4189d82c47f1f3445fc505e30",
@@ -34,12 +34,12 @@
   "license_current_name": "MIT License",
   "license_current_spdx": "MIT",
   "license_history": [],
-  "network_count": 88006,
-  "open_issues_count": 853,
+  "network_count": 90163,
+  "open_issues_count": 988,
   "private": "ionix-ray/rea",
-  "refreshed_at": "2026-10-21T11:27:36Z",
-  "stargazers_count": 350105,
-  "subscribers_count": 1254,
+  "refreshed_at": "2026-10-22T04:31:01Z",
+  "stargazers_count": 359211,
+  "subscribers_count": 1276,
   "topics": [
     "ai-agents",
     "binary-analysis",
@@ -62,12 +62,12 @@
     "rea",
     "touhou"
   ],
-  "updated_at": "2026-10-21T05:26:09Z",
+  "updated_at": "2026-10-22T04:30:50Z",
   "upstream": "morluto/rea",
   "upstream_archived": false,
   "upstream_default_branch": "main",
-  "upstream_pushed_at": "2026-10-21T05:22:19Z",
-  "upstream_size_kb": 92462,
+  "upstream_pushed_at": "2026-10-22T04:28:17Z",
+  "upstream_size_kb": 96668,
   "upstream_state": "active",
-  "watchers_count": 1254
+  "watchers_count": 1276
 }

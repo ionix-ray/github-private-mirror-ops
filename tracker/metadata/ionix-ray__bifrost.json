@@ -1,7 +1,7 @@
 {
   "created_at": "2025-03-19T07:21:26Z",
   "description": "Open-source, high-performance AI gateway that works as your LLM gateway, MCP gateway and agent gateway. One OpenAI-compatible API for 10,000+ models, with failover, load balancing, semantic caching, virtual keys, budgets and MCP Code Mode. Works with any SDK or agent and adds under 200µs of overhead at 5k RPS.",
-  "forks_count": 1435,
+  "forks_count": 1443,
   "has_discussions": true,
   "has_pages": false,
   "has_projects": false,
@@ -12,7 +12,7 @@
   "languages": {
     "CSS": 27674,
     "Dockerfile": 4537,
-    "Go": 45619697,
+    "Go": 45625355,
     "Go Template": 141141,
     "HCL": 205286,
     "HTML": 7359,
@@ -21,7 +21,7 @@
     "Nix": 12770,
     "Python": 1288212,
     "Shell": 430182,
-    "TypeScript": 7907712,
+    "TypeScript": 7911175,
     "jq": 6318
   },
   "last_synced_at": "2026-10-21T11:26:52Z",
@@ -31,11 +31,11 @@
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
-  "network_count": 1435,
-  "open_issues_count": 547,
+  "network_count": 1443,
+  "open_issues_count": 560,
   "private": "ionix-ray/bifrost",
-  "refreshed_at": "2026-10-21T11:26:52Z",
-  "stargazers_count": 8976,
+  "refreshed_at": "2026-10-22T04:31:01Z",
+  "stargazers_count": 9004,
   "subscribers_count": 35,
   "topics": [
     "gateway",
@@ -59,12 +59,12 @@
     "openai-compatible",
     "semantic-cache"
   ],
-  "updated_at": "2026-10-21T03:52:08Z",
+  "updated_at": "2026-10-22T01:59:17Z",
   "upstream": "maximhq/bifrost",
   "upstream_archived": false,
   "upstream_default_branch": "dev",
-  "upstream_pushed_at": "2026-10-21T01:23:22Z",
-  "upstream_size_kb": 1145950,
+  "upstream_pushed_at": "2026-10-21T23:56:33Z",
+  "upstream_size_kb": 1145878,
   "upstream_state": "active",
   "watchers_count": 35
 }

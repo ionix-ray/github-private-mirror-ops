@@ -27,9 +27,9 @@
   "license_current_spdx": "Apache-2.0",
   "license_history": [],
   "network_count": 220,
-  "open_issues_count": 270,
+  "open_issues_count": 269,
   "private": "ionix-ray/carbon-charts",
-  "refreshed_at": "2026-10-21T11:27:07Z",
+  "refreshed_at": "2026-10-22T04:31:01Z",
   "stargazers_count": 1055,
   "subscribers_count": 27,
   "topics": [
@@ -48,12 +48,12 @@
     "javascript",
     "svelte"
   ],
-  "updated_at": "2026-10-12T11:54:58Z",
+  "updated_at": "2026-10-21T10:54:57Z",
   "upstream": "carbon-design-system/carbon-charts",
   "upstream_archived": false,
   "upstream_default_branch": "main",
-  "upstream_pushed_at": "2026-10-05T10:29:53Z",
-  "upstream_size_kb": 1206983,
+  "upstream_pushed_at": "2026-10-21T10:56:12Z",
+  "upstream_size_kb": 1207919,
   "upstream_state": "active",
   "watchers_count": 27
 }

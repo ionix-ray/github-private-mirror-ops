@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-10-21T12:31:58.666130+00:00",
+  "generated_at": "2026-10-22T04:31:19.982173+00:00",
   "version": 1,
   "defaults": {
     "schedule": "0 6 * * *",
     "strategy": "fast-forward"
   },
   "summary": {
-    "total_repos": 16,
-    "total_stars": 415060,
-    "total_forks": 97968,
-    "total_open_issues": 4317,
+    "total_repos": 17,
+    "total_stars": 424456,
+    "total_forks": 100148,
+    "total_open_issues": 4482,
     "archived_count": 0,
     "deleted_count": 1,
     "paused_count": 0,
@@ -43,11 +43,11 @@
       "network_count": 306,
       "open_issues_count": 17,
       "private": "ionix-ray/GyoiThon",
-      "refreshed_at": "2026-10-21T11:26:50Z",
-      "stargazers_count": 830,
+      "refreshed_at": "2026-10-22T04:31:01Z",
+      "stargazers_count": 832,
       "subscribers_count": 65,
       "topics": [],
-      "updated_at": "2026-10-16T00:12:17Z",
+      "updated_at": "2026-10-22T01:19:56Z",
       "upstream": "gyoisamurai/GyoiThon",
       "upstream_archived": false,
       "upstream_default_branch": "master",
@@ -61,8 +61,8 @@
       "_computed": {
         "health_score": 55,
         "opportunity_flag": "Popular but stale \u2014 potential revival",
-        "days_since_push": 1278,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "days_since_push": 1279,
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
@@ -92,7 +92,7 @@
       "network_count": 10,
       "open_issues_count": 0,
       "private": "ionix-ray/PiRanha",
-      "refreshed_at": "2026-10-21T11:26:51Z",
+      "refreshed_at": "2026-10-22T04:31:01Z",
       "stargazers_count": 4,
       "subscribers_count": 0,
       "topics": [],
@@ -110,14 +110,14 @@
       "_computed": {
         "health_score": 12,
         "opportunity_flag": "",
-        "days_since_push": 122,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "days_since_push": 123,
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
       "created_at": "2026-04-29T21:12:19Z",
       "description": "A Python library for building AI agents that leverage the full power of Google Antigravity.",
-      "forks_count": 1502,
+      "forks_count": 1505,
       "has_discussions": true,
       "has_pages": false,
       "has_projects": true,
@@ -136,12 +136,12 @@
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
-      "network_count": 1502,
-      "open_issues_count": 27,
+      "network_count": 1505,
+      "open_issues_count": 26,
       "private": "ionix-ray/antigravity-sdk-python",
-      "refreshed_at": "2026-10-21T11:26:52Z",
-      "stargazers_count": 3805,
-      "subscribers_count": 167,
+      "refreshed_at": "2026-10-22T04:31:01Z",
+      "stargazers_count": 3814,
+      "subscribers_count": 168,
       "topics": [
         "ai-agents",
         "antigravity",
@@ -153,28 +153,28 @@
         "python-sdk",
         "skills"
       ],
-      "updated_at": "2026-10-21T04:52:07Z",
+      "updated_at": "2026-10-21T22:58:48Z",
       "upstream": "google-antigravity/antigravity-sdk-python",
       "upstream_archived": false,
       "upstream_default_branch": "main",
       "upstream_pushed_at": "2026-10-13T22:48:33Z",
       "upstream_size_kb": 2292,
       "upstream_state": "active",
-      "watchers_count": 167,
+      "watchers_count": 168,
       "branch": "main",
       "pause_reason": "",
       "paused": false,
       "_computed": {
         "health_score": 85,
         "opportunity_flag": "Strong community engagement",
-        "days_since_push": 7,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
       "created_at": "2025-03-19T07:21:26Z",
       "description": "Open-source, high-performance AI gateway that works as your LLM gateway, MCP gateway and agent gateway. One OpenAI-compatible API for 10,000+ models, with failover, load balancing, semantic caching, virtual keys, budgets and MCP Code Mode. Works with any SDK or agent and adds under 200\u00b5s of overhead at 5k RPS.",
-      "forks_count": 1435,
+      "forks_count": 1443,
       "has_discussions": true,
       "has_pages": false,
       "has_projects": false,
@@ -185,7 +185,7 @@
       "languages": {
         "CSS": 27674,
         "Dockerfile": 4537,
-        "Go": 45619697,
+        "Go": 45625355,
         "Go Template": 141141,
         "HCL": 205286,
         "HTML": 7359,
@@ -194,7 +194,7 @@
         "Nix": 12770,
         "Python": 1288212,
         "Shell": 430182,
-        "TypeScript": 7907712,
+        "TypeScript": 7911175,
         "jq": 6318
       },
       "last_synced_at": "2026-10-21T11:26:52Z",
@@ -204,11 +204,11 @@
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
-      "network_count": 1435,
-      "open_issues_count": 547,
+      "network_count": 1443,
+      "open_issues_count": 560,
       "private": "ionix-ray/bifrost",
-      "refreshed_at": "2026-10-21T11:26:52Z",
-      "stargazers_count": 8976,
+      "refreshed_at": "2026-10-22T04:31:01Z",
+      "stargazers_count": 9004,
       "subscribers_count": 35,
       "topics": [
         "gateway",
@@ -232,12 +232,12 @@
         "openai-compatible",
         "semantic-cache"
       ],
-      "updated_at": "2026-10-21T03:52:08Z",
+      "updated_at": "2026-10-22T01:59:17Z",
       "upstream": "maximhq/bifrost",
       "upstream_archived": false,
       "upstream_default_branch": "dev",
-      "upstream_pushed_at": "2026-10-21T01:23:22Z",
-      "upstream_size_kb": 1145950,
+      "upstream_pushed_at": "2026-10-21T23:56:33Z",
+      "upstream_size_kb": 1145878,
       "upstream_state": "active",
       "watchers_count": 35,
       "branch": "dev",
@@ -247,7 +247,7 @@
         "health_score": 75,
         "opportunity_flag": "Active community, many open issues",
         "days_since_push": 0,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
@@ -279,9 +279,9 @@
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
       "network_count": 220,
-      "open_issues_count": 270,
+      "open_issues_count": 269,
       "private": "ionix-ray/carbon-charts",
-      "refreshed_at": "2026-10-21T11:27:07Z",
+      "refreshed_at": "2026-10-22T04:31:01Z",
       "stargazers_count": 1055,
       "subscribers_count": 27,
       "topics": [
@@ -300,12 +300,12 @@
         "javascript",
         "svelte"
       ],
-      "updated_at": "2026-10-12T11:54:58Z",
+      "updated_at": "2026-10-21T10:54:57Z",
       "upstream": "carbon-design-system/carbon-charts",
       "upstream_archived": false,
       "upstream_default_branch": "main",
-      "upstream_pushed_at": "2026-10-05T10:29:53Z",
-      "upstream_size_kb": 1206983,
+      "upstream_pushed_at": "2026-10-21T10:56:12Z",
+      "upstream_size_kb": 1207919,
       "upstream_state": "active",
       "watchers_count": 27,
       "branch": "main",
@@ -314,8 +314,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "Active community, many open issues",
-        "days_since_push": 16,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "days_since_push": 0,
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
@@ -344,7 +344,7 @@
       "network_count": 0,
       "open_issues_count": 0,
       "private": "ionix-ray/cli",
-      "refreshed_at": "2026-10-21T11:27:15Z",
+      "refreshed_at": "2026-10-22T04:31:01Z",
       "stargazers_count": 7,
       "subscribers_count": 0,
       "topics": [],
@@ -363,7 +363,7 @@
         "health_score": 30,
         "opportunity_flag": "",
         "days_since_push": 24,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
@@ -371,9 +371,9 @@
       "last_synced_sha": "",
       "last_synced_status": "failed",
       "last_upstream_sha": "",
-      "last_validated_at": "2026-10-21T12:31:30Z",
+      "last_validated_at": "2026-10-22T04:30:35Z",
       "private": "ionix-ray/experiential-enterprise",
-      "refreshed_at": "2026-10-21T11:27:16Z",
+      "refreshed_at": "2026-10-22T04:31:01Z",
       "upstream": "experientiallabs/experiential-enterprise",
       "upstream_state": "deleted",
       "branch": "main",
@@ -383,13 +383,13 @@
         "health_score": 0,
         "opportunity_flag": "",
         "days_since_push": null,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
       "created_at": "2026-06-24T22:40:57Z",
       "description": "Experiential is the open source, zero markup gateway for BYOK, self-hosted and 1000+ marketplace models. It learns from your traffic to cut costs, recommend better models, and train a specialized model you own.",
-      "forks_count": 238,
+      "forks_count": 240,
       "has_discussions": false,
       "has_pages": false,
       "has_projects": true,
@@ -411,35 +411,35 @@
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
-      "network_count": 238,
+      "network_count": 240,
       "open_issues_count": 45,
       "private": "ionix-ray/experiential",
-      "refreshed_at": "2026-10-21T11:27:16Z",
-      "stargazers_count": 9949,
-      "subscribers_count": 12,
+      "refreshed_at": "2026-10-22T04:31:01Z",
+      "stargazers_count": 10172,
+      "subscribers_count": 13,
       "topics": [],
-      "updated_at": "2026-10-21T05:24:45Z",
+      "updated_at": "2026-10-22T04:20:05Z",
       "upstream": "experientiallabs/experiential",
       "upstream_archived": false,
       "upstream_default_branch": "main",
       "upstream_pushed_at": "2026-10-10T00:04:09Z",
       "upstream_size_kb": 100747,
       "upstream_state": "active",
-      "watchers_count": 12,
+      "watchers_count": 13,
       "branch": "main",
       "pause_reason": "",
       "paused": false,
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "High demand, low competition",
-        "days_since_push": 11,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "days_since_push": 12,
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
       "created_at": "2025-12-26T07:24:38Z",
       "description": "This repository contains comprehensive pricing and configuration data for LLMs. It powers cost attribution for 200+ enterprises running 400B+ tokens through Portkey AI Gateway every day.",
-      "forks_count": 46,
+      "forks_count": 47,
       "has_discussions": false,
       "has_pages": false,
       "has_projects": true,
@@ -459,10 +459,10 @@
       "license_current_name": "MIT License",
       "license_current_spdx": "MIT",
       "license_history": [],
-      "network_count": 46,
+      "network_count": 47,
       "open_issues_count": 9,
       "private": "ionix-ray/models",
-      "refreshed_at": "2026-10-21T11:27:17Z",
+      "refreshed_at": "2026-10-22T04:31:01Z",
       "stargazers_count": 143,
       "subscribers_count": 1,
       "topics": [
@@ -471,12 +471,12 @@
         "llms-benchmarking",
         "models"
       ],
-      "updated_at": "2026-10-20T13:46:29Z",
+      "updated_at": "2026-10-22T04:12:43Z",
       "upstream": "Portkey-AI/models",
       "upstream_archived": false,
       "upstream_default_branch": "main",
-      "upstream_pushed_at": "2026-10-20T20:58:48Z",
-      "upstream_size_kb": 12366,
+      "upstream_pushed_at": "2026-10-22T04:12:38Z",
+      "upstream_size_kb": 12367,
       "upstream_state": "active",
       "watchers_count": 1,
       "branch": "main",
@@ -486,7 +486,66 @@
         "health_score": 63,
         "opportunity_flag": "",
         "days_since_push": 0,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
+      }
+    },
+    {
+      "created_at": "2026-10-21T03:31:18Z",
+      "description": "\ud83d\udd13 An AI web-pentest skill for Claude Code. Point it at a site you're authorized to test \u2014 it maps the attack surface, works through the OWASP WSTG, validates findings, and writes dev + stakeholder reports (PDF).",
+      "forks_count": 3,
+      "has_discussions": false,
+      "has_pages": false,
+      "has_projects": true,
+      "has_wiki": true,
+      "homepage": "",
+      "is_template": false,
+      "language": "HTML",
+      "languages": {
+        "HTML": 9332,
+        "Shell": 3606
+      },
+      "license_current_name": "Other",
+      "license_current_spdx": "OTHER",
+      "license_history": [],
+      "network_count": 3,
+      "open_issues_count": 0,
+      "private": "ionix-ray/open-sesame",
+      "refreshed_at": "2026-10-22T04:31:01Z",
+      "stargazers_count": 19,
+      "subscribers_count": 0,
+      "topics": [
+        "ai-agents",
+        "anthropic",
+        "appsec",
+        "claude",
+        "claude-code",
+        "ethical-hacking",
+        "infosec",
+        "owasp",
+        "owasp-wstg",
+        "penetration-testing",
+        "pentesting",
+        "security",
+        "security-tools",
+        "vulnerability-assessment",
+        "web-security"
+      ],
+      "updated_at": "2026-10-22T03:12:02Z",
+      "upstream": "hassan-algo/open-sesame",
+      "upstream_archived": false,
+      "upstream_default_branch": "main",
+      "upstream_pushed_at": "2026-10-21T19:28:58Z",
+      "upstream_size_kb": 35,
+      "upstream_state": "active",
+      "watchers_count": 0,
+      "branch": "main",
+      "pause_reason": "",
+      "paused": false,
+      "_computed": {
+        "health_score": 31,
+        "opportunity_flag": "",
+        "days_since_push": 0,
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
@@ -511,7 +570,7 @@
       "network_count": 7,
       "open_issues_count": 1,
       "private": "ionix-ray/openapi",
-      "refreshed_at": "2026-10-21T11:27:24Z",
+      "refreshed_at": "2026-10-22T04:31:01Z",
       "stargazers_count": 7,
       "subscribers_count": 1,
       "topics": [
@@ -536,8 +595,8 @@
       "_computed": {
         "health_score": 41,
         "opportunity_flag": "",
-        "days_since_push": 2,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "days_since_push": 3,
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
@@ -584,8 +643,8 @@
       "network_count": 507,
       "open_issues_count": 303,
       "private": "ionix-ray/pixie",
-      "refreshed_at": "2026-10-21T11:27:25Z",
-      "stargazers_count": 6548,
+      "refreshed_at": "2026-10-22T04:31:01Z",
+      "stargazers_count": 6550,
       "subscribers_count": 75,
       "topics": [
         "golang",
@@ -609,7 +668,7 @@
         "pandas",
         "apache-arrow"
       ],
-      "updated_at": "2026-10-20T01:21:58Z",
+      "updated_at": "2026-10-21T07:56:50Z",
       "upstream": "pixie-io/pixie",
       "upstream_archived": false,
       "upstream_default_branch": "main",
@@ -623,14 +682,14 @@
       "_computed": {
         "health_score": 65,
         "opportunity_flag": "High demand, low competition",
-        "days_since_push": 2,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "days_since_push": 3,
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
       "created_at": "2017-03-03T17:02:42Z",
       "description": "Qiskit is an open-source SDK for working with quantum computers at the level of extended quantum circuits, operators, and primitives.",
-      "forks_count": 3090,
+      "forks_count": 3089,
       "has_discussions": false,
       "has_pages": false,
       "has_projects": true,
@@ -645,9 +704,9 @@
         "Jupyter Notebook": 1320,
         "Makefile": 7099,
         "OpenQASM": 22803,
-        "Python": 13409479,
-        "Rust": 6589316,
-        "Shell": 17399
+        "Python": 13422282,
+        "Rust": 6590387,
+        "Shell": 17401
       },
       "last_synced_at": "2026-10-21T11:27:26Z",
       "last_synced_sha": "506c37d2c3dbfa9239663e9c7dfd15f26561fc26",
@@ -657,11 +716,11 @@
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
-      "network_count": 3090,
-      "open_issues_count": 731,
+      "network_count": 3089,
+      "open_issues_count": 726,
       "private": "ionix-ray/qiskit",
-      "refreshed_at": "2026-10-21T11:27:26Z",
-      "stargazers_count": 7910,
+      "refreshed_at": "2026-10-22T04:31:01Z",
+      "stargazers_count": 7915,
       "subscribers_count": 234,
       "topics": [
         "quantum-computing",
@@ -674,12 +733,12 @@
         "c",
         "rust"
       ],
-      "updated_at": "2026-10-20T20:05:59Z",
+      "updated_at": "2026-10-21T23:38:24Z",
       "upstream": "Qiskit/qiskit",
       "upstream_archived": false,
       "upstream_default_branch": "main",
-      "upstream_pushed_at": "2026-10-21T03:11:34Z",
-      "upstream_size_kb": 183770,
+      "upstream_pushed_at": "2026-10-22T00:31:48Z",
+      "upstream_size_kb": 185679,
       "upstream_state": "active",
       "watchers_count": 234,
       "branch": "main",
@@ -689,13 +748,13 @@
         "health_score": 65,
         "opportunity_flag": "Active community, many open issues",
         "days_since_push": 0,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
       "created_at": "2026-04-14T00:51:32Z",
       "description": "Reverse engineer anything with agents, from app behavior down to native binaries.",
-      "forks_count": 88006,
+      "forks_count": 90163,
       "has_discussions": true,
       "has_pages": false,
       "has_projects": true,
@@ -711,15 +770,15 @@
         "Go Template": 7196,
         "HTML": 730230,
         "Java": 421256,
-        "JavaScript": 2979836,
+        "JavaScript": 3056963,
         "Linker Script": 692,
         "Makefile": 250,
         "Objective-C": 3047,
-        "Python": 750903,
+        "Python": 798306,
         "Shell": 12663,
         "Solidity": 470,
         "Swift": 54283,
-        "TypeScript": 32499612
+        "TypeScript": 34226682
       },
       "last_synced_at": "2026-10-21T11:27:36Z",
       "last_synced_sha": "aa53c065387c58b4189d82c47f1f3445fc505e30",
@@ -728,12 +787,12 @@
       "license_current_name": "MIT License",
       "license_current_spdx": "MIT",
       "license_history": [],
-      "network_count": 88006,
-      "open_issues_count": 853,
+      "network_count": 90163,
+      "open_issues_count": 988,
       "private": "ionix-ray/rea",
-      "refreshed_at": "2026-10-21T11:27:36Z",
-      "stargazers_count": 350105,
-      "subscribers_count": 1254,
+      "refreshed_at": "2026-10-22T04:31:01Z",
+      "stargazers_count": 359211,
+      "subscribers_count": 1276,
       "topics": [
         "ai-agents",
         "binary-analysis",
@@ -756,14 +815,14 @@
         "rea",
         "touhou"
       ],
-      "updated_at": "2026-10-21T05:26:09Z",
+      "updated_at": "2026-10-22T04:30:50Z",
       "upstream": "morluto/rea",
       "upstream_archived": false,
       "upstream_default_branch": "main",
-      "upstream_pushed_at": "2026-10-21T05:22:19Z",
-      "upstream_size_kb": 92462,
+      "upstream_pushed_at": "2026-10-22T04:28:17Z",
+      "upstream_size_kb": 96668,
       "upstream_state": "active",
-      "watchers_count": 1254,
+      "watchers_count": 1276,
       "branch": "main",
       "pause_reason": "",
       "paused": false,
@@ -771,7 +830,7 @@
         "health_score": 75,
         "opportunity_flag": "Strong community engagement",
         "days_since_push": 0,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
@@ -787,7 +846,7 @@
       "language": "Python",
       "languages": {
         "Dockerfile": 1080,
-        "Python": 4314839
+        "Python": 4281159
       },
       "last_synced_at": "2026-10-21T11:27:45Z",
       "last_synced_sha": "8ec7948ce6e8ab28c4454d6c2c3187a735672067",
@@ -797,9 +856,9 @@
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
       "network_count": 1047,
-      "open_issues_count": 145,
+      "open_issues_count": 144,
       "private": "ionix-ray/swarms",
-      "refreshed_at": "2026-10-21T11:27:45Z",
+      "refreshed_at": "2026-10-22T04:31:01Z",
       "stargazers_count": 7285,
       "subscribers_count": 66,
       "topics": [
@@ -822,12 +881,12 @@
         "agentic-ai",
         "claude-code"
       ],
-      "updated_at": "2026-10-20T23:52:43Z",
+      "updated_at": "2026-10-22T03:34:22Z",
       "upstream": "kyegomez/swarms",
       "upstream_archived": false,
       "upstream_default_branch": "master",
-      "upstream_pushed_at": "2026-10-20T23:42:17Z",
-      "upstream_size_kb": 189904,
+      "upstream_pushed_at": "2026-10-21T22:02:48Z",
+      "upstream_size_kb": 189756,
       "upstream_state": "active",
       "watchers_count": 66,
       "branch": "master",
@@ -837,7 +896,7 @@
         "health_score": 75,
         "opportunity_flag": "Strong community engagement",
         "days_since_push": 0,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
@@ -854,16 +913,16 @@
       "languages": {
         "Awk": 5185,
         "CSS": 23761,
-        "Dockerfile": 83392,
-        "Go": 35595230,
+        "Dockerfile": 84752,
+        "Go": 36703495,
         "Go Template": 48192,
         "HTML": 1548303,
-        "JavaScript": 393421,
+        "JavaScript": 403433,
         "PLpgSQL": 208024,
-        "Python": 389226,
+        "Python": 396445,
         "Ruby": 17843,
-        "Shell": 3638889,
-        "TypeScript": 34651816,
+        "Shell": 3684939,
+        "TypeScript": 35740145,
         "jq": 4649
       },
       "last_synced_at": "2026-10-21T11:27:53Z",
@@ -874,18 +933,18 @@
       "license_current_spdx": "MIT",
       "license_history": [],
       "network_count": 4,
-      "open_issues_count": 188,
+      "open_issues_count": 216,
       "private": "ionix-ray/uzi",
-      "refreshed_at": "2026-10-21T11:27:53Z",
+      "refreshed_at": "2026-10-22T04:31:01Z",
       "stargazers_count": 92,
       "subscribers_count": 1,
       "topics": [],
-      "updated_at": "2026-10-21T04:24:59Z",
+      "updated_at": "2026-10-22T03:10:05Z",
       "upstream": "vtmocanu/uzi",
       "upstream_archived": false,
       "upstream_default_branch": "main",
-      "upstream_pushed_at": "2026-10-21T05:23:32Z",
-      "upstream_size_kb": 104703,
+      "upstream_pushed_at": "2026-10-22T04:15:52Z",
+      "upstream_size_kb": 96784,
       "upstream_state": "active",
       "watchers_count": 1,
       "branch": "main",
@@ -895,13 +954,13 @@
         "health_score": 39,
         "opportunity_flag": "",
         "days_since_push": 0,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     },
     {
       "created_at": "2018-09-13T19:18:50Z",
       "description": "A cross-platform, safe, pure-Rust graphics API.",
-      "forks_count": 1550,
+      "forks_count": 1557,
       "has_discussions": true,
       "has_pages": false,
       "has_projects": true,
@@ -916,7 +975,7 @@
         "JavaScript": 31287,
         "Metal": 458731,
         "RenderScript": 2,
-        "Rust": 12920164,
+        "Rust": 12923618,
         "Shell": 2020,
         "Slang": 2422,
         "WGSL": 2202613
@@ -929,11 +988,11 @@
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
-      "network_count": 1550,
-      "open_issues_count": 1181,
+      "network_count": 1557,
+      "open_issues_count": 1178,
       "private": "ionix-ray/wgpu",
-      "refreshed_at": "2026-10-21T11:28:04Z",
-      "stargazers_count": 18344,
+      "refreshed_at": "2026-10-22T04:31:01Z",
+      "stargazers_count": 18346,
       "subscribers_count": 117,
       "topics": [
         "webgpu",
@@ -945,12 +1004,12 @@
         "hacktoberfest",
         "d3d12"
       ],
-      "updated_at": "2026-10-21T03:40:52Z",
+      "updated_at": "2026-10-22T02:00:12Z",
       "upstream": "gfx-rs/wgpu",
       "upstream_archived": false,
       "upstream_default_branch": "trunk",
-      "upstream_pushed_at": "2026-10-20T19:53:39Z",
-      "upstream_size_kb": 87900,
+      "upstream_pushed_at": "2026-10-22T00:15:33Z",
+      "upstream_size_kb": 87831,
       "upstream_state": "active",
       "watchers_count": 117,
       "branch": "trunk",
@@ -960,7 +1019,7 @@
         "health_score": 75,
         "opportunity_flag": "High demand, low competition",
         "days_since_push": 0,
-        "generated_at": "2026-10-21T12:31:58.666130+00:00"
+        "generated_at": "2026-10-22T04:31:19.982173+00:00"
       }
     }
   ]
