@@ -13,13 +13,17 @@
     "HTML": 9332,
     "Shell": 3606
   },
+  "last_synced_at": "2026-10-22T11:27:26Z",
+  "last_synced_sha": "9c8daddbf91c5d76e5742f9c449e78c08b0e1e6d",
+  "last_synced_status": "ok",
+  "last_upstream_sha": "9c8daddbf91c5d76e5742f9c449e78c08b0e1e6d",
   "license_current_name": "Other",
   "license_current_spdx": "OTHER",
   "license_history": [],
   "network_count": 3,
   "open_issues_count": 0,
   "private": "ionix-ray/open-sesame",
-  "refreshed_at": "2026-10-22T04:31:01Z",
+  "refreshed_at": "2026-10-22T11:27:26Z",
   "stargazers_count": 19,
   "subscribers_count": 0,
   "topics": [
