@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-26T12:34:32.255210+00:00",
+  "generated_at": "2026-10-26T13:41:41.504514+00:00",
   "version": 1,
   "defaults": {
     "schedule": "0 6 * * *",
@@ -61,8 +61,8 @@
       "_computed": {
         "health_score": 55,
         "opportunity_flag": "Popular but stale \u2014 potential revival",
-        "days_since_push": 1283,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "days_since_push": 1284,
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -111,7 +111,7 @@
         "health_score": 12,
         "opportunity_flag": "",
         "days_since_push": 127,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -168,7 +168,7 @@
         "health_score": 85,
         "opportunity_flag": "Strong community engagement",
         "days_since_push": 12,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -247,7 +247,7 @@
         "health_score": 75,
         "opportunity_flag": "Active community, many open issues",
         "days_since_push": 4,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -315,7 +315,7 @@
         "health_score": 75,
         "opportunity_flag": "Active community, many open issues",
         "days_since_push": 5,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -363,7 +363,7 @@
         "health_score": 30,
         "opportunity_flag": "",
         "days_since_push": 29,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -371,7 +371,7 @@
       "last_synced_sha": "",
       "last_synced_status": "failed",
       "last_upstream_sha": "",
-      "last_validated_at": "2026-10-25T12:10:53Z",
+      "last_validated_at": "2026-10-26T13:41:12Z",
       "private": "ionix-ray/experiential-enterprise",
       "refreshed_at": "2026-10-26T12:33:25Z",
       "upstream": "experientiallabs/experiential-enterprise",
@@ -383,7 +383,7 @@
         "health_score": 0,
         "opportunity_flag": "",
         "days_since_push": null,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -433,7 +433,7 @@
         "health_score": 75,
         "opportunity_flag": "High demand, low competition",
         "days_since_push": 16,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -486,7 +486,7 @@
         "health_score": 63,
         "opportunity_flag": "",
         "days_since_push": 4,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -549,7 +549,7 @@
         "health_score": 31,
         "opportunity_flag": "",
         "days_since_push": 4,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -600,7 +600,7 @@
         "health_score": 41,
         "opportunity_flag": "",
         "days_since_push": 7,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -687,7 +687,7 @@
         "health_score": 65,
         "opportunity_flag": "High demand, low competition",
         "days_since_push": 7,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -752,7 +752,7 @@
         "health_score": 65,
         "opportunity_flag": "Active community, many open issues",
         "days_since_push": 4,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -834,7 +834,7 @@
         "health_score": 75,
         "opportunity_flag": "Strong community engagement",
         "days_since_push": 4,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -900,7 +900,7 @@
         "health_score": 75,
         "opportunity_flag": "Strong community engagement",
         "days_since_push": 4,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -958,7 +958,7 @@
         "health_score": 39,
         "opportunity_flag": "",
         "days_since_push": 4,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     },
     {
@@ -1023,7 +1023,7 @@
         "health_score": 75,
         "opportunity_flag": "High demand, low competition",
         "days_since_push": 4,
-        "generated_at": "2026-10-26T12:34:32.255210+00:00"
+        "generated_at": "2026-10-26T13:41:41.504514+00:00"
       }
     }
   ]
