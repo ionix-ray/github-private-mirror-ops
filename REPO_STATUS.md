@@ -1,6 +1,6 @@
 # Mirror Registry Status Dashboard
 
-_Auto-generated private dashboard. Last updated: `2026-10-26T13:41:41.504514+00:00`._
+_Auto-generated private dashboard. Last updated: `2026-10-27T11:52:18.487160+00:00`._
 
 ## Summary
 
@@ -52,7 +52,7 @@ _Auto-generated private dashboard. Last updated: `2026-10-26T13:41:41.504514+00:
 | 3 | 🟢 active | [google-antigravity/antigravity-sdk-python](https://github.com/google-antigravity/antigravity-sdk-python) | [ionix-ray/antigravity-sdk-python](https://github.com/ionix-ray/antigravity-sdk-python) | 3,814 | 1,505 | 26 | Python | 2026-10-13 | 🟢 85 | Strong community engagement |
 | 4 | 🟢 active | [maximhq/bifrost](https://github.com/maximhq/bifrost) | [ionix-ray/bifrost](https://github.com/ionix-ray/bifrost) | 9,004 | 1,443 | 560 | Go | 2026-10-21 | 🟡 75 | Active community, many open issues |
 | 5 | 🟢 active | [carbon-design-system/carbon-charts](https://github.com/carbon-design-system/carbon-charts) | [ionix-ray/carbon-charts](https://github.com/ionix-ray/carbon-charts) | 1,055 | 220 | 269 | HTML | 2026-10-21 | 🟡 75 | Active community, many open issues |
-| 6 | 🟢 active | [belt-sh/cli](https://github.com/belt-sh/cli) | [ionix-ray/cli](https://github.com/ionix-ray/cli) | 7 | 0 | 0 | Shell | 2026-09-27 | 🔴 30 | - |
+| 6 | 🟢 active | [belt-sh/cli](https://github.com/belt-sh/cli) | [ionix-ray/cli](https://github.com/ionix-ray/cli) | 7 | 0 | 0 | Shell | 2026-09-27 | 🔴 20 | - |
 | 7 | 🟢 active | [experientiallabs/experiential-enterprise](https://github.com/experientiallabs/experiential-enterprise) | [ionix-ray/experiential-enterprise](https://github.com/ionix-ray/experiential-enterprise) | 0 | 0 | 0 | - | - | 🔴 0 | - |
 | 8 | 🟢 active | [experientiallabs/experiential](https://github.com/experientiallabs/experiential) | [ionix-ray/experiential](https://github.com/ionix-ray/experiential) | 10,172 | 240 | 45 | Python | 2026-10-10 | 🟡 75 | High demand, low competition |
 | 9 | 🟢 active | [Portkey-AI/models](https://github.com/Portkey-AI/models) | [ionix-ray/models](https://github.com/ionix-ray/models) | 143 | 47 | 9 | JavaScript | 2026-10-22 | 🟡 63 | - |
