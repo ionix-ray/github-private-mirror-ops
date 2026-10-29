@@ -31,7 +31,7 @@
     "Thrift": 498,
     "TypeScript": 1753038
   },
-  "last_synced_at": "2026-10-28T12:26:25Z",
+  "last_synced_at": "2026-10-29T12:35:43Z",
   "last_synced_sha": "50cabe70efeab51e69a20703f0f019114efc19be",
   "last_synced_status": "ok",
   "last_upstream_sha": "50cabe70efeab51e69a20703f0f019114efc19be",
@@ -42,7 +42,7 @@
   "network_count": 507,
   "open_issues_count": 303,
   "private": "ionix-ray/pixie",
-  "refreshed_at": "2026-10-28T12:26:25Z",
+  "refreshed_at": "2026-10-29T12:35:43Z",
   "stargazers_count": 6550,
   "subscribers_count": 75,
   "topics": [
