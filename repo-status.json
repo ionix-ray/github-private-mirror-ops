@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-29T13:48:28.627901+00:00",
+  "generated_at": "2026-10-30T12:27:31.040094+00:00",
   "version": 1,
   "defaults": {
     "schedule": "0 6 * * *",
@@ -33,7 +33,7 @@
         "Python": 322956,
         "Shell": 775
       },
-      "last_synced_at": "2026-10-29T12:35:05Z",
+      "last_synced_at": "2026-10-30T12:26:41Z",
       "last_synced_sha": "8dec26aabdbf9ee999e7cc5b5eee9222f01bae13",
       "last_synced_status": "ok",
       "last_upstream_sha": "8dec26aabdbf9ee999e7cc5b5eee9222f01bae13",
@@ -43,7 +43,7 @@
       "network_count": 306,
       "open_issues_count": 17,
       "private": "ionix-ray/GyoiThon",
-      "refreshed_at": "2026-10-29T12:35:05Z",
+      "refreshed_at": "2026-10-30T12:26:41Z",
       "stargazers_count": 832,
       "subscribers_count": 65,
       "topics": [],
@@ -62,7 +62,7 @@
         "health_score": 55,
         "opportunity_flag": "Popular but stale \u2014 potential revival",
         "days_since_push": 1287,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -81,7 +81,7 @@
         "Shell": 7419,
         "TypeScript": 143668
       },
-      "last_synced_at": "2026-10-29T12:35:05Z",
+      "last_synced_at": "2026-10-30T12:26:41Z",
       "last_synced_sha": "0f66391e19a145bee85763c2636e46322f96d1de",
       "last_synced_status": "ok",
       "last_upstream_sha": "0f66391e19a145bee85763c2636e46322f96d1de",
@@ -92,7 +92,7 @@
       "network_count": 10,
       "open_issues_count": 0,
       "private": "ionix-ray/PiRanha",
-      "refreshed_at": "2026-10-29T12:35:05Z",
+      "refreshed_at": "2026-10-30T12:26:41Z",
       "stargazers_count": 4,
       "subscribers_count": 0,
       "topics": [],
@@ -110,8 +110,8 @@
       "_computed": {
         "health_score": 12,
         "opportunity_flag": "",
-        "days_since_push": 130,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 131,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -129,7 +129,7 @@
         "Python": 1630575,
         "Shell": 15342
       },
-      "last_synced_at": "2026-10-29T12:35:06Z",
+      "last_synced_at": "2026-10-30T12:26:41Z",
       "last_synced_sha": "75ba22bd00afae2f46393ff31f30c3f0df52982f",
       "last_synced_status": "ok",
       "last_upstream_sha": "75ba22bd00afae2f46393ff31f30c3f0df52982f",
@@ -139,7 +139,7 @@
       "network_count": 1505,
       "open_issues_count": 26,
       "private": "ionix-ray/antigravity-sdk-python",
-      "refreshed_at": "2026-10-29T12:35:06Z",
+      "refreshed_at": "2026-10-30T12:26:41Z",
       "stargazers_count": 3814,
       "subscribers_count": 168,
       "topics": [
@@ -167,8 +167,8 @@
       "_computed": {
         "health_score": 85,
         "opportunity_flag": "Strong community engagement",
-        "days_since_push": 15,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 16,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -197,17 +197,17 @@
         "TypeScript": 7911175,
         "jq": 6318
       },
-      "last_synced_at": "2026-10-29T12:35:09Z",
-      "last_synced_sha": "9b0e360da4fcff1188929b828466167e9f4aae69",
+      "last_synced_at": "2026-10-30T12:26:42Z",
+      "last_synced_sha": "e03dd8c38ac053a0644a8cd16738f65493e2bb5e",
       "last_synced_status": "ok",
-      "last_upstream_sha": "9b0e360da4fcff1188929b828466167e9f4aae69",
+      "last_upstream_sha": "e03dd8c38ac053a0644a8cd16738f65493e2bb5e",
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
       "network_count": 1443,
       "open_issues_count": 560,
       "private": "ionix-ray/bifrost",
-      "refreshed_at": "2026-10-29T12:35:09Z",
+      "refreshed_at": "2026-10-30T12:26:42Z",
       "stargazers_count": 9004,
       "subscribers_count": 35,
       "topics": [
@@ -246,8 +246,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "Active community, many open issues",
-        "days_since_push": 7,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -270,7 +270,7 @@
         "TypeScript": 2194745,
         "Vue": 710
       },
-      "last_synced_at": "2026-10-29T12:35:28Z",
+      "last_synced_at": "2026-10-30T12:26:54Z",
       "last_synced_sha": "4baa87bb1b5aba5e1a16b3a7bd8cf9c548afd894",
       "last_synced_status": "ok",
       "last_upstream_sha": "4baa87bb1b5aba5e1a16b3a7bd8cf9c548afd894",
@@ -281,7 +281,7 @@
       "network_count": 220,
       "open_issues_count": 269,
       "private": "ionix-ray/carbon-charts",
-      "refreshed_at": "2026-10-29T12:35:28Z",
+      "refreshed_at": "2026-10-30T12:26:54Z",
       "stargazers_count": 1055,
       "subscribers_count": 27,
       "topics": [
@@ -314,8 +314,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "Active community, many open issues",
-        "days_since_push": 8,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 9,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -333,7 +333,7 @@
         "PowerShell": 1967,
         "Shell": 3284
       },
-      "last_synced_at": "2026-10-29T12:35:32Z",
+      "last_synced_at": "2026-10-30T12:26:55Z",
       "last_synced_sha": "9736524264825acd558521646d20bc33873ad992",
       "last_synced_status": "ok",
       "last_upstream_sha": "9736524264825acd558521646d20bc33873ad992",
@@ -344,7 +344,7 @@
       "network_count": 0,
       "open_issues_count": 0,
       "private": "ionix-ray/cli",
-      "refreshed_at": "2026-10-29T12:35:32Z",
+      "refreshed_at": "2026-10-30T12:26:55Z",
       "stargazers_count": 7,
       "subscribers_count": 0,
       "topics": [],
@@ -362,18 +362,18 @@
       "_computed": {
         "health_score": 20,
         "opportunity_flag": "",
-        "days_since_push": 32,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 33,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
-      "last_synced_at": "2026-10-29T12:35:33Z",
+      "last_synced_at": "2026-10-30T12:26:55Z",
       "last_synced_sha": "",
       "last_synced_status": "failed",
       "last_upstream_sha": "",
       "last_validated_at": "2026-10-29T13:47:58Z",
       "private": "ionix-ray/experiential-enterprise",
-      "refreshed_at": "2026-10-29T12:35:33Z",
+      "refreshed_at": "2026-10-30T12:26:55Z",
       "upstream": "experientiallabs/experiential-enterprise",
       "upstream_state": "deleted",
       "branch": "main",
@@ -383,7 +383,7 @@
         "health_score": 0,
         "opportunity_flag": "",
         "days_since_push": null,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -403,10 +403,10 @@
         "Python": 17390895,
         "Rust": 2925010
       },
-      "last_synced_at": "2026-10-29T12:35:33Z",
-      "last_synced_sha": "6a39013a5ea14a602c2dcf25bdc9763ec5998426",
+      "last_synced_at": "2026-10-30T12:26:55Z",
+      "last_synced_sha": "a2f449a15ee6e9de9d676e875f7e96facfbc548c",
       "last_synced_status": "ok",
-      "last_upstream_sha": "6a39013a5ea14a602c2dcf25bdc9763ec5998426",
+      "last_upstream_sha": "a2f449a15ee6e9de9d676e875f7e96facfbc548c",
       "last_validated_at": "2026-10-19T14:08:39Z",
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
@@ -414,7 +414,7 @@
       "network_count": 240,
       "open_issues_count": 45,
       "private": "ionix-ray/experiential",
-      "refreshed_at": "2026-10-29T12:35:33Z",
+      "refreshed_at": "2026-10-30T12:26:55Z",
       "stargazers_count": 10172,
       "subscribers_count": 13,
       "topics": [],
@@ -432,8 +432,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "High demand, low competition",
-        "days_since_push": 19,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 20,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -452,7 +452,7 @@
         "Python": 8256,
         "Shell": 67
       },
-      "last_synced_at": "2026-10-29T12:35:38Z",
+      "last_synced_at": "2026-10-30T12:26:59Z",
       "last_synced_sha": "7aaa2aceed8d4104ca22d1a89c198545e125c649",
       "last_synced_status": "ok",
       "last_upstream_sha": "7aaa2aceed8d4104ca22d1a89c198545e125c649",
@@ -462,7 +462,7 @@
       "network_count": 47,
       "open_issues_count": 9,
       "private": "ionix-ray/models",
-      "refreshed_at": "2026-10-29T12:35:38Z",
+      "refreshed_at": "2026-10-30T12:26:59Z",
       "stargazers_count": 143,
       "subscribers_count": 1,
       "topics": [
@@ -485,8 +485,8 @@
       "_computed": {
         "health_score": 63,
         "opportunity_flag": "",
-        "days_since_push": 7,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -504,7 +504,7 @@
         "HTML": 9332,
         "Shell": 3606
       },
-      "last_synced_at": "2026-10-29T12:35:42Z",
+      "last_synced_at": "2026-10-30T12:27:00Z",
       "last_synced_sha": "5a5600568ba722dac10744d50da92bef08733b6e",
       "last_synced_status": "ok",
       "last_upstream_sha": "5a5600568ba722dac10744d50da92bef08733b6e",
@@ -514,7 +514,7 @@
       "network_count": 3,
       "open_issues_count": 0,
       "private": "ionix-ray/open-sesame",
-      "refreshed_at": "2026-10-29T12:35:42Z",
+      "refreshed_at": "2026-10-30T12:27:00Z",
       "stargazers_count": 19,
       "subscribers_count": 0,
       "topics": [
@@ -548,8 +548,8 @@
       "_computed": {
         "health_score": 31,
         "opportunity_flag": "",
-        "days_since_push": 7,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -564,17 +564,17 @@
       "is_template": false,
       "language": "",
       "languages": {},
-      "last_synced_at": "2026-10-29T12:35:42Z",
-      "last_synced_sha": "c3dda8038580e40b53ae666b06167a2977146eaf",
+      "last_synced_at": "2026-10-30T12:27:00Z",
+      "last_synced_sha": "4b6d01b98b4e0ebbfe6f4896a02290695a748b18",
       "last_synced_status": "ok",
-      "last_upstream_sha": "c3dda8038580e40b53ae666b06167a2977146eaf",
+      "last_upstream_sha": "4b6d01b98b4e0ebbfe6f4896a02290695a748b18",
       "license_current_name": "MIT License",
       "license_current_spdx": "MIT",
       "license_history": [],
       "network_count": 7,
       "open_issues_count": 1,
       "private": "ionix-ray/openapi",
-      "refreshed_at": "2026-10-29T12:35:42Z",
+      "refreshed_at": "2026-10-30T12:27:00Z",
       "stargazers_count": 7,
       "subscribers_count": 1,
       "topics": [
@@ -599,8 +599,8 @@
       "_computed": {
         "health_score": 41,
         "opportunity_flag": "",
-        "days_since_push": 10,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 11,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -636,7 +636,7 @@
         "Thrift": 498,
         "TypeScript": 1753038
       },
-      "last_synced_at": "2026-10-29T12:35:43Z",
+      "last_synced_at": "2026-10-30T12:27:04Z",
       "last_synced_sha": "50cabe70efeab51e69a20703f0f019114efc19be",
       "last_synced_status": "ok",
       "last_upstream_sha": "50cabe70efeab51e69a20703f0f019114efc19be",
@@ -647,7 +647,7 @@
       "network_count": 507,
       "open_issues_count": 303,
       "private": "ionix-ray/pixie",
-      "refreshed_at": "2026-10-29T12:35:43Z",
+      "refreshed_at": "2026-10-30T12:27:04Z",
       "stargazers_count": 6550,
       "subscribers_count": 75,
       "topics": [
@@ -686,8 +686,8 @@
       "_computed": {
         "health_score": 65,
         "opportunity_flag": "High demand, low competition",
-        "days_since_push": 10,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 11,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -712,10 +712,10 @@
         "Rust": 6590387,
         "Shell": 17401
       },
-      "last_synced_at": "2026-10-29T12:35:43Z",
-      "last_synced_sha": "5f9bf19d4f0cb5eaf990df2cb8aec2b143e67d36",
+      "last_synced_at": "2026-10-30T12:27:04Z",
+      "last_synced_sha": "0f2d7ddfd262b1fa3afbc27f733e5c9f6cc6426d",
       "last_synced_status": "ok",
-      "last_upstream_sha": "5f9bf19d4f0cb5eaf990df2cb8aec2b143e67d36",
+      "last_upstream_sha": "0f2d7ddfd262b1fa3afbc27f733e5c9f6cc6426d",
       "last_validated_at": "",
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
@@ -723,7 +723,7 @@
       "network_count": 3089,
       "open_issues_count": 726,
       "private": "ionix-ray/qiskit",
-      "refreshed_at": "2026-10-29T12:35:43Z",
+      "refreshed_at": "2026-10-30T12:27:04Z",
       "stargazers_count": 7915,
       "subscribers_count": 234,
       "topics": [
@@ -751,8 +751,8 @@
       "_computed": {
         "health_score": 65,
         "opportunity_flag": "Active community, many open issues",
-        "days_since_push": 7,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -784,17 +784,17 @@
         "Swift": 54283,
         "TypeScript": 34226682
       },
-      "last_synced_at": "2026-10-29T12:35:48Z",
-      "last_synced_sha": "b3d31ed106c6f3baef1dc778ea688c23323879ba",
+      "last_synced_at": "2026-10-30T12:27:10Z",
+      "last_synced_sha": "8f920bb65b8d8ae669411501b0a3a59a62883ac3",
       "last_synced_status": "ok",
-      "last_upstream_sha": "b3d31ed106c6f3baef1dc778ea688c23323879ba",
+      "last_upstream_sha": "8f920bb65b8d8ae669411501b0a3a59a62883ac3",
       "license_current_name": "MIT License",
       "license_current_spdx": "MIT",
       "license_history": [],
       "network_count": 90163,
       "open_issues_count": 988,
       "private": "ionix-ray/rea",
-      "refreshed_at": "2026-10-29T12:35:48Z",
+      "refreshed_at": "2026-10-30T12:27:10Z",
       "stargazers_count": 359211,
       "subscribers_count": 1276,
       "topics": [
@@ -833,8 +833,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "Strong community engagement",
-        "days_since_push": 7,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -852,17 +852,17 @@
         "Dockerfile": 1080,
         "Python": 4281159
       },
-      "last_synced_at": "2026-10-29T12:35:57Z",
-      "last_synced_sha": "d715975065b586f24960bd3524071ceb22550222",
+      "last_synced_at": "2026-10-30T12:27:16Z",
+      "last_synced_sha": "c15bf3142733a6108b11bd59dd726a7f25fd6919",
       "last_synced_status": "ok",
-      "last_upstream_sha": "d715975065b586f24960bd3524071ceb22550222",
+      "last_upstream_sha": "c15bf3142733a6108b11bd59dd726a7f25fd6919",
       "license_current_name": "Apache License 2.0",
       "license_current_spdx": "Apache-2.0",
       "license_history": [],
       "network_count": 1047,
       "open_issues_count": 144,
       "private": "ionix-ray/swarms",
-      "refreshed_at": "2026-10-29T12:35:57Z",
+      "refreshed_at": "2026-10-30T12:27:16Z",
       "stargazers_count": 7285,
       "subscribers_count": 66,
       "topics": [
@@ -899,8 +899,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "Strong community engagement",
-        "days_since_push": 7,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -929,17 +929,17 @@
         "TypeScript": 35740145,
         "jq": 4649
       },
-      "last_synced_at": "2026-10-29T12:36:01Z",
-      "last_synced_sha": "67003a2325ba2c5bb39ddd54796d4b28be7e4e69",
+      "last_synced_at": "2026-10-30T12:27:22Z",
+      "last_synced_sha": "c6453c2d8cefe2b756d59dd5e65e715e74db3d2d",
       "last_synced_status": "ok",
-      "last_upstream_sha": "67003a2325ba2c5bb39ddd54796d4b28be7e4e69",
+      "last_upstream_sha": "c6453c2d8cefe2b756d59dd5e65e715e74db3d2d",
       "license_current_name": "MIT License",
       "license_current_spdx": "MIT",
       "license_history": [],
       "network_count": 4,
       "open_issues_count": 216,
       "private": "ionix-ray/uzi",
-      "refreshed_at": "2026-10-29T12:36:01Z",
+      "refreshed_at": "2026-10-30T12:27:22Z",
       "stargazers_count": 92,
       "subscribers_count": 1,
       "topics": [],
@@ -957,8 +957,8 @@
       "_computed": {
         "health_score": 39,
         "opportunity_flag": "",
-        "days_since_push": 7,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     },
     {
@@ -984,7 +984,7 @@
         "Slang": 2422,
         "WGSL": 2202613
       },
-      "last_synced_at": "2026-10-29T12:36:09Z",
+      "last_synced_at": "2026-10-30T12:27:30Z",
       "last_synced_sha": "49325ca0a13bdc0787b1601138096cce743dd29e",
       "last_synced_status": "ok",
       "last_upstream_sha": "49325ca0a13bdc0787b1601138096cce743dd29e",
@@ -995,7 +995,7 @@
       "network_count": 1557,
       "open_issues_count": 1178,
       "private": "ionix-ray/wgpu",
-      "refreshed_at": "2026-10-29T12:36:09Z",
+      "refreshed_at": "2026-10-30T12:27:30Z",
       "stargazers_count": 18346,
       "subscribers_count": 117,
       "topics": [
@@ -1022,8 +1022,8 @@
       "_computed": {
         "health_score": 75,
         "opportunity_flag": "High demand, low competition",
-        "days_since_push": 7,
-        "generated_at": "2026-10-29T13:48:28.627901+00:00"
+        "days_since_push": 8,
+        "generated_at": "2026-10-30T12:27:31.040094+00:00"
       }
     }
   ]
