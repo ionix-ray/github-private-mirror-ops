@@ -21,10 +21,10 @@
     "Slang": 2422,
     "WGSL": 2202613
   },
-  "last_synced_at": "2026-11-02T15:12:54Z",
-  "last_synced_sha": "97474455ba35475ee70f79ff5a3eec58c900f8ce",
+  "last_synced_at": "2026-11-03T13:54:38Z",
+  "last_synced_sha": "837694b85304f4f66f2480fbc0cd536855e666c9",
   "last_synced_status": "ok",
-  "last_upstream_sha": "97474455ba35475ee70f79ff5a3eec58c900f8ce",
+  "last_upstream_sha": "837694b85304f4f66f2480fbc0cd536855e666c9",
   "last_validated_at": "",
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
@@ -32,7 +32,7 @@
   "network_count": 1557,
   "open_issues_count": 1178,
   "private": "ionix-ray/wgpu",
-  "refreshed_at": "2026-11-02T15:12:54Z",
+  "refreshed_at": "2026-11-03T13:54:38Z",
   "stargazers_count": 18346,
   "subscribers_count": 117,
   "topics": [
