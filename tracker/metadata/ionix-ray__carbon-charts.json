@@ -18,10 +18,10 @@
     "TypeScript": 2194745,
     "Vue": 710
   },
-  "last_synced_at": "2026-11-04T14:01:38Z",
-  "last_synced_sha": "4baa87bb1b5aba5e1a16b3a7bd8cf9c548afd894",
+  "last_synced_at": "2026-11-05T14:22:30Z",
+  "last_synced_sha": "5d652a3ec093815b68829f74e3e5f3d823a4e696",
   "last_synced_status": "ok",
-  "last_upstream_sha": "4baa87bb1b5aba5e1a16b3a7bd8cf9c548afd894",
+  "last_upstream_sha": "5d652a3ec093815b68829f74e3e5f3d823a4e696",
   "last_validated_at": "",
   "license_current_name": "Apache License 2.0",
   "license_current_spdx": "Apache-2.0",
@@ -29,7 +29,7 @@
   "network_count": 220,
   "open_issues_count": 269,
   "private": "ionix-ray/carbon-charts",
-  "refreshed_at": "2026-11-04T14:01:38Z",
+  "refreshed_at": "2026-11-05T14:22:30Z",
   "stargazers_count": 1055,
   "subscribers_count": 27,
   "topics": [
